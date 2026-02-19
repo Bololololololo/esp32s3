@@ -1,2 +1,3 @@
 idf_component_register(SRCS "main_app.c"
-                       INCLUDE_DIRS ".")
+                       INCLUDE_DIRS "."
+                       PRIV_REQUIRES status_led)

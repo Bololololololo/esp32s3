@@ -9,10 +9,8 @@
 #include <stdio.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#include "driver/gpio.h"
 #include "esp_log.h"
-#include "led_strip.h"
-#include "sdkconfig.h"
+#include "status_led.h"
 
 static const char *TAG = "main_app";
 
@@ -20,7 +18,8 @@ void app_main(void)
 {
     ESP_LOGI(TAG, "Main APP started");
     /* Configure the peripheral according to the LED type */
-    // configure_led();
+    configure_status_led();
+    set_led_color(STATUS_LED_COLOR_RED);
 
     while (1)
     {

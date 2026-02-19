@@ -1,3 +1,6 @@
+#include <stdio.h>
+#include "status_led.h"
+
 #include "driver/gpio.h"
 #include "esp_log.h"
 #include "led_strip.h"
@@ -10,30 +13,11 @@ static const char *TAG = "rgb_led";
 */
 #define BLINK_GPIO CONFIG_BLINK_GPIO
 
-static uint8_t s_led_state = 0;
-
 #ifdef CONFIG_BLINK_LED_STRIP
 
-static led_strip_handle_t led_strip;
+static led_strip_handle_t led_strip = NULL;
 
-static void blink_led(void)
-{
-    /* If the addressable LED is enabled */
-    if (s_led_state)
-    {
-        /* Set the LED pixel using RGB from 0 (0%) to 255 (100%) for each color */
-        led_strip_set_pixel(led_strip, 0, 16, 16, 16);
-        /* Refresh the strip to send data */
-        led_strip_refresh(led_strip);
-    }
-    else
-    {
-        /* Set all LED off to clear all pixels */
-        led_strip_clear(led_strip);
-    }
-}
-
-static void configure_led(void)
+void configure_status_led(void)
 {
     ESP_LOGI(TAG, "Example configured to blink addressable LED!");
     /* LED strip initialization with the GPIO and pixels number*/
@@ -60,20 +44,33 @@ static void configure_led(void)
     led_strip_clear(led_strip);
 }
 
-#elif CONFIG_BLINK_LED_GPIO
-
-static void blink_led(void)
+void set_led_color(status_led_color_t led_color)
 {
-    /* Set the GPIO level according to the state (LOW or HIGH)*/
-    gpio_set_level(BLINK_GPIO, s_led_state);
-}
+    if (led_strip == NULL)
+    {
+        ESP_LOGE(TAG, "LED strip not initialized");
+        return;
+    }
 
-static void configure_led(void)
-{
-    ESP_LOGI(TAG, "Example configured to blink GPIO LED!");
-    gpio_reset_pin(BLINK_GPIO);
-    /* Set the GPIO as a push/pull output */
-    gpio_set_direction(BLINK_GPIO, GPIO_MODE_OUTPUT);
+    switch (led_color)
+    {
+    case STATUS_LED_COLOR_OFF:
+        led_strip_clear(led_strip);
+        break;
+    case STATUS_LED_COLOR_RED:
+        led_strip_set_pixel(led_strip, 0, 255, 0, 0);
+        break;
+    case STATUS_LED_COLOR_GREEN:
+        led_strip_set_pixel(led_strip, 0, 0, 255, 0);
+        break;
+    case STATUS_LED_COLOR_BLUE:
+        led_strip_set_pixel(led_strip, 0, 0, 0, 255);
+        break;
+    case STATUS_LED_COLOR_YELLOW:
+        led_strip_set_pixel(led_strip, 0, 255, 255, 0);
+        break;
+    }
+    led_strip_refresh(led_strip);
 }
 
 #else
