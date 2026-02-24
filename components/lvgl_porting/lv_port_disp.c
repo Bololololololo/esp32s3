@@ -38,7 +38,7 @@
  **********************/
 
 /* size drains the DRAM so carefull with going to far */
-#define CUSTOM_BUFFER_SIZE 100
+#define CUSTOM_BUFFER_SIZE 10
 
 /**********************
  *  STATIC PROTOTYPES
