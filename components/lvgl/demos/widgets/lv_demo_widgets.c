@@ -208,8 +208,6 @@ void lv_demo_widgets(void)
     mainTabCreate(t1);
     debugTabCreate(t2);
     settingsTabCreate(t3);
-
-    color_changer_create(tv);
 }
 
 void lv_demo_widgets_close(void)
