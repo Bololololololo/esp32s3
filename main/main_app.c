@@ -20,7 +20,7 @@
 #include "lv_port_disp.h"
 #include "lv_port_indev.h"
 #include "esp_timer.h"
-#include "lv_demos.h"
+#include "gui.h"
 
 static const char *TAG = "main_app";
 
@@ -49,7 +49,8 @@ void app_main(void)
     ESP_ERROR_CHECK(esp_timer_create(&lvgl_tick_timer_args, &lvgl_tick_timer));
     ESP_ERROR_CHECK(esp_timer_start_periodic(lvgl_tick_timer, 10 * 1000));
 
-    lv_demo_widgets(); // LVGL Demo
+    /* Initialize the GUI */
+    guiInit();
 
     set_led_color(STATUS_LED_COLOR_GREEN);
 
