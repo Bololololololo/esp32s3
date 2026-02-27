@@ -7,16 +7,30 @@
 #ifndef STATUS_LED_H
 #define STATUS_LED_H
 
-typedef enum
-{
-    STATUS_LED_COLOR_OFF = 0,
-    STATUS_LED_COLOR_RED,
-    STATUS_LED_COLOR_GREEN,
-    STATUS_LED_COLOR_BLUE,
-    STATUS_LED_COLOR_YELLOW,
-} status_led_color_t;
+#include "led_strip.h"
 
-void configure_status_led(void);
-void set_led_color(status_led_color_t led_color);
+namespace utils
+{
+    enum class StatusLEDColor
+    {
+        OFF = 0,
+        RED,
+        GREEN,
+        BLUE,
+        YELLOW,
+    };
+
+    class StatusLED
+    {
+    public:
+        StatusLED();
+        ~StatusLED();
+
+        void setColor(StatusLEDColor led_color);
+
+    private:
+        led_strip_handle_t led_strip{NULL};
+    };
+}
 
 #endif // STATUS_LED_H

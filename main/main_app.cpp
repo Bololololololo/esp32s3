@@ -22,6 +22,8 @@
 #include "esp_timer.h"
 #include "gui.h"
 
+using namespace utils;
+
 static const char *TAG = "main_app";
 
 static void inc_lvgl_tick(void *arg)
@@ -29,12 +31,17 @@ static void inc_lvgl_tick(void *arg)
     lv_tick_inc(10);
 }
 
+extern "C"
+{
+    void app_main(void);
+}
+
 void app_main(void)
 {
     ESP_LOGI(TAG, "Main APP started");
     /* Configure the peripheral according to the LED type */
-    configure_status_led();
-    set_led_color(STATUS_LED_COLOR_RED);
+    StatusLED status_led;
+    status_led.setColor(utils::StatusLEDColor::RED);
 
     /* Initialize display*/
     lv_init();            // init lvgl
@@ -52,7 +59,7 @@ void app_main(void)
     /* Initialize the GUI */
     guiInit();
 
-    set_led_color(STATUS_LED_COLOR_GREEN);
+    status_led.setColor(utils::StatusLEDColor::GREEN);
 
     while (1)
     {
