@@ -34,8 +34,8 @@ namespace utils
 
     size_t SystemInfo::getFreeHeapSizeKB(void)
     {
-        // return esp_get_free_heap_size() / 1024;
-        return 1024;
+        return esp_get_free_heap_size() / 1024;
+        // return 1024;
     }
 
     size_t SystemInfo::getTotalHeapSizeKB(void)

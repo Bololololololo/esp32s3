@@ -127,17 +127,17 @@ void Gui::settingsTabCreate(lv_obj_t *parent)
     lv_obj_t *cb;
     cb = lv_checkbox_create(panel1);
     lv_checkbox_set_text(cb, "Seting 1");
-    lv_obj_add_state(cb, LV_STATE_UNCHECKED);
+    lv_obj_add_state(cb, LV_STATE_DEFAULT);
     lv_obj_add_event_cb(cb, event_handler, LV_EVENT_ALL, NULL);
 
     cb = lv_checkbox_create(panel1);
     lv_checkbox_set_text(cb, "Setting 2");
-    lv_obj_add_state(cb, LV_STATE_UNCHECKED);
+    lv_obj_add_state(cb, LV_STATE_DEFAULT);
     lv_obj_add_event_cb(cb, event_handler, LV_EVENT_ALL, NULL);
 
     cb = lv_checkbox_create(panel1);
     lv_checkbox_set_text(cb, "Setting 3");
-    lv_obj_add_state(cb, LV_STATE_UNCHECKED);
+    lv_obj_add_state(cb, LV_STATE_DEFAULT);
     lv_obj_add_event_cb(cb, event_handler, LV_EVENT_ALL, NULL);
 
     cb = lv_checkbox_create(panel1);
