@@ -6,10 +6,13 @@
    software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
    CONDITIONS OF ANY KIND, either express or implied.
 */
-#include <stdio.h>
+#include <memory>
+#include <iostream>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_log.h"
+#include "esp_err.h"
+#include "esp_check.h"
 #include "status_led.h"
 
 #include "sdkconfig.h"
@@ -57,7 +60,9 @@ void app_main(void)
     ESP_ERROR_CHECK(esp_timer_start_periodic(lvgl_tick_timer, 10 * 1000));
 
     /* Initialize the GUI */
-    guiInit();
+    Gui *gui = Gui::getInstance();
+    assert(gui != NULL);
+    gui->init();
 
     status_led.setColor(utils::StatusLEDColor::GREEN);
 

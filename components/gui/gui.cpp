@@ -1,41 +1,30 @@
-#include <stdio.h>
+#include <iostream>
 
 #include "gui.h"
-// #include "system_info.h"
-#include "lvgl.h"
+#include "esp_log.h"
 
-/**********************
- *  STATIC PROTOTYPES
- **********************/
-static void mainTabCreate(lv_obj_t *parent);
-static void settingsTabCreate(lv_obj_t *parent);
-static void debugTabCreate(lv_obj_t *parent);
+static const char *TAG = "gui";
 
-/**********************
- *  STATIC VARIABLES
- **********************/
-static const lv_font_t *font_normal;
-static const lv_font_t *font_large;
+void Gui::event_handler(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    lv_obj_t *obj = lv_event_get_target(e);
+    if (code == LV_EVENT_VALUE_CHANGED)
+    {
+        const char *txt = lv_checkbox_get_text(obj);
+        const char *state = lv_obj_get_state(obj) & LV_STATE_CHECKED ? "Checked" : "Unchecked";
+        LV_LOG_USER("%s: %s", txt, state);
+        ESP_LOGI(TAG, "Button pressed txt : %s  state : %s", txt, state);
+    }
+}
 
-static lv_style_t style_text_muted;
-static lv_style_t style_title;
-static lv_style_t style_icon;
-static lv_style_t style_bullet;
-
-static lv_obj_t *tv;
-
-/**********************
- *   GLOBAL FUNCTIONS
- **********************/
-
-void guiInit(void)
+void Gui::init()
 {
     font_normal = LV_FONT_DEFAULT;
     font_large = LV_FONT_DEFAULT;
 
-    lv_coord_t tab_h;
     /* disp_size == DISP_SMALL */
-    tab_h = 45;
+    lv_coord_t tab_h = 45;
 
 #if LV_FONT_MONTSERRAT_12
     font_normal = &lv_font_montserrat_12;
@@ -73,7 +62,7 @@ void guiInit(void)
     tv = lv_tabview_create(lv_scr_act(), LV_DIR_TOP, tab_h);
 
     lv_obj_t *t1 = lv_tabview_add_tab(tv, "Main");
-    lv_obj_t *t2 = lv_tabview_add_tab(tv, "Logs");
+    lv_obj_t *t2 = lv_tabview_add_tab(tv, "Debug");
     lv_obj_t *t3 = lv_tabview_add_tab(tv, "Settings");
 
     mainTabCreate(t1);
@@ -81,11 +70,7 @@ void guiInit(void)
     settingsTabCreate(t3);
 }
 
-/**********************
- *   STATIC FUNCTIONS
- **********************/
-
-static void mainTabCreate(lv_obj_t *parent)
+void Gui::mainTabCreate(lv_obj_t *parent)
 {
     lv_obj_t *panel1 = lv_obj_create(parent);
     lv_obj_set_height(panel1, LV_SIZE_CONTENT);
@@ -130,31 +115,40 @@ static void mainTabCreate(lv_obj_t *parent)
     lv_obj_set_grid_cell(menu_btn3, LV_GRID_ALIGN_STRETCH, 0, 2, LV_GRID_ALIGN_CENTER, 2, 1);
 }
 
-static void settingsTabCreate(lv_obj_t *parent)
+void Gui::settingsTabCreate(lv_obj_t *parent)
 {
+    lv_obj_t *panel1 = lv_obj_create(parent);
+    lv_obj_add_flag(panel1, LV_OBJ_FLAG_FLEX_IN_NEW_TRACK);
+    lv_obj_set_height(panel1, LV_PCT(100));
+
+    lv_obj_set_flex_flow(panel1, LV_FLEX_FLOW_COLUMN);
+    lv_obj_set_flex_grow(panel1, 1);
+
     lv_obj_t *cb;
+    cb = lv_checkbox_create(panel1);
+    lv_checkbox_set_text(cb, "Seting 1");
+    lv_obj_add_state(cb, LV_STATE_UNCHECKED);
+    lv_obj_add_event_cb(cb, event_handler, LV_EVENT_ALL, NULL);
 
-    lv_obj_t *settings = lv_obj_create(parent);
+    cb = lv_checkbox_create(panel1);
+    lv_checkbox_set_text(cb, "Setting 2");
+    lv_obj_add_state(cb, LV_STATE_UNCHECKED);
+    lv_obj_add_event_cb(cb, event_handler, LV_EVENT_ALL, NULL);
 
-    lv_obj_add_flag(settings, LV_OBJ_FLAG_FLEX_IN_NEW_TRACK);
-    lv_obj_set_height(settings, LV_PCT(100));
+    cb = lv_checkbox_create(panel1);
+    lv_checkbox_set_text(cb, "Setting 3");
+    lv_obj_add_state(cb, LV_STATE_UNCHECKED);
+    lv_obj_add_event_cb(cb, event_handler, LV_EVENT_ALL, NULL);
 
-    lv_obj_set_flex_flow(settings, LV_FLEX_FLOW_COLUMN);
-    lv_obj_set_flex_grow(settings, 1);
+    cb = lv_checkbox_create(panel1);
+    lv_obj_add_state(cb, LV_STATE_CHECKED | LV_STATE_DISABLED);
+    lv_checkbox_set_text(cb, "Setting 4");
+    lv_obj_add_event_cb(cb, event_handler, LV_EVENT_ALL, NULL);
 
-    lv_obj_t *title = lv_label_create(settings);
-    lv_label_set_text(title, "Settings");
-    lv_obj_add_style(title, &style_title, 0);
-
-    cb = lv_checkbox_create(settings);
-    lv_checkbox_set_text(cb, "Enable setting 1");
-    cb = lv_checkbox_create(settings);
-    lv_checkbox_set_text(cb, "Enable setting 2");
-    cb = lv_checkbox_create(settings);
-    lv_checkbox_set_text(cb, "Enable setting 3");
+    lv_obj_update_layout(cb);
 }
 
-static void debugTabCreate(lv_obj_t *parent)
+void Gui::debugTabCreate(lv_obj_t *parent)
 {
     lv_obj_t *panel1 = lv_obj_create(parent);
     lv_obj_set_height(panel1, LV_SIZE_CONTENT);
