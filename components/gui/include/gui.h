@@ -6,6 +6,9 @@
 #include <memory>
 
 #include "lvgl.h"
+#include "system_info.h"
+
+using namespace utils;
 
 class Gui
 {
@@ -23,6 +26,8 @@ private:
     lv_style_t style_icon;
     lv_style_t style_bullet;
     lv_obj_t *tv;
+
+    SystemInfo sys_info;
 
     void mainTabCreate(lv_obj_t *parent);
     void settingsTabCreate(lv_obj_t *parent);

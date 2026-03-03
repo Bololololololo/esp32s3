@@ -155,16 +155,19 @@ void Gui::debugTabCreate(lv_obj_t *parent)
 
     // Get information about CPU, RAM and storage usage
     lv_obj_t *cpu_freq_label = lv_label_create(panel1);
-    // lv_label_set_text_fmt(cpu_freq_label, "CPU Frequency: %" LV_PRId32 " MHz", getCpuFreqMHz());
+    lv_label_set_text_fmt(cpu_freq_label, "CPU Frequency: %" LV_PRId32 " MHz", sys_info.getCpuFreqMHz());
 
-    lv_obj_t *total_free_heap_label = lv_label_create(panel1);
-    // lv_label_set_text_fmt(total_free_heap_label, "Total free heap available:  %u KB", getFreeHeapSizeKB());
+    lv_obj_t *total_free_dram_label = lv_label_create(panel1);
+    lv_label_set_text_fmt(total_free_dram_label, "Total free DRAM available:  %u KB", sys_info.getTotalFreeDRAMSizeKB());
 
-    lv_obj_t *total_psram_label = lv_label_create(panel1);
-    // lv_label_set_text_fmt(total_psram_label, "Total PSRAM available:  %u KB", getPsramSize());
+    lv_obj_t *total_free_iram_label = lv_label_create(panel1);
+    lv_label_set_text_fmt(total_free_iram_label, "Total free Internal DRAM available:  %u KB", sys_info.getFreeInternalDRAMSizeKB());
 
-    lv_obj_t *total_mem_pool = lv_label_create(panel1);
-    // lv_label_set_text_fmt(total_mem_pool, "Total memory pool:  %u KB", getTotalHeapSizeKB());
+    lv_obj_t *total_internal_mem_pool = lv_label_create(panel1);
+    lv_label_set_text_fmt(total_internal_mem_pool, "Total Internal RAM size:  %u KB", sys_info.getTotalInternalSizeKB());
+
+    lv_obj_t *total_external_mem_pool = lv_label_create(panel1);
+    lv_label_set_text_fmt(total_external_mem_pool, "Total External PSRAM available:  %u KB", sys_info.getTotalPsramSize());
 
     lv_obj_t *storage_size_label = lv_label_create(panel1);
     lv_label_set_text(storage_size_label, "Storage Size: 16GB");
@@ -177,8 +180,10 @@ void Gui::debugTabCreate(lv_obj_t *parent)
     static lv_coord_t grid_1_col_dsc[] = {LV_GRID_CONTENT, LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST};
     static lv_coord_t grid_1_row_dsc[] = {LV_GRID_CONTENT, /*CPU freq*/
                                           LV_GRID_CONTENT, /*RAM size*/
+                                          LV_GRID_CONTENT, /*IRAM size*/
+                                          LV_GRID_CONTENT, /*PSRAM size*/
+                                          LV_GRID_CONTENT, /*Memory pool size*/
                                           LV_GRID_CONTENT, /*Storage size*/
-                                          LV_GRID_CONTENT,
                                           LV_GRID_CONTENT,
                                           LV_GRID_TEMPLATE_LAST};
 
@@ -186,8 +191,9 @@ void Gui::debugTabCreate(lv_obj_t *parent)
 
     lv_obj_set_grid_cell(panel1, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_CENTER, 0, 1);
     lv_obj_set_grid_cell(cpu_freq_label, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_CENTER, 1, 1);
-    lv_obj_set_grid_cell(total_free_heap_label, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_CENTER, 2, 1);
-    lv_obj_set_grid_cell(total_psram_label, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_CENTER, 3, 1);
-    lv_obj_set_grid_cell(total_mem_pool, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_CENTER, 4, 1);
-    lv_obj_set_grid_cell(storage_size_label, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_CENTER, 5, 1);
+    lv_obj_set_grid_cell(total_free_dram_label, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_CENTER, 2, 1);
+    lv_obj_set_grid_cell(total_free_iram_label, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_CENTER, 3, 1);
+    lv_obj_set_grid_cell(total_internal_mem_pool, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_CENTER, 4, 1);
+    lv_obj_set_grid_cell(total_external_mem_pool, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_CENTER, 5, 1);
+    lv_obj_set_grid_cell(storage_size_label, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_CENTER, 6, 1);
 }

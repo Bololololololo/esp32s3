@@ -16,11 +16,11 @@ namespace utils
         SystemInfo(/* args */);
         ~SystemInfo();
 
-    private:
-        std::size_t getPsramSize(void);
         std::uint32_t getCpuFreqMHz(void);
-        std::size_t getFreeHeapSizeKB(void);
-        std::size_t getTotalHeapSizeKB(void);
+        std::size_t getTotalFreeDRAMSizeKB(void);
+        std::size_t getFreeInternalDRAMSizeKB(void);
+        std::size_t getTotalPsramSize(void);
+        std::size_t getTotalInternalSizeKB(void);
     };
 }
 
