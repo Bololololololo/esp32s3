@@ -29,6 +29,16 @@ using namespace utils;
 
 static const char *TAG = "main_app";
 
+// Task created for GUI to run in separate core
+void vTaskGui(void *pvParameters)
+{
+    while (1)
+    {
+        lv_task_handler();
+        vTaskDelay(pdMS_TO_TICKS(10));
+    }
+}
+
 static void inc_lvgl_tick(void *arg)
 {
     lv_tick_inc(10);
@@ -66,9 +76,19 @@ void app_main(void)
 
     status_led.setColor(utils::StatusLEDColor::GREEN);
 
+    // Run GUI task on a separate core to ensure smooth performance
+    xTaskCreatePinnedToCore(
+        vTaskGui,                 // Function
+        "Core1_Task",             // Name
+        8192,                     // Stack size
+        NULL,                     // Parameter
+        configMAX_PRIORITIES - 1, // Priority
+        NULL,                     // Handle
+        1                         // <--- Pinned to Core 1
+    );
+
     while (1)
     {
-        vTaskDelay(pdMS_TO_TICKS(10));
-        lv_task_handler();
+        vTaskDelay(pdMS_TO_TICKS(100));
     }
 }
