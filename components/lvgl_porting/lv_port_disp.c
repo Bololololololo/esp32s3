@@ -32,7 +32,7 @@
 #define MY_DISP_VER_RES 240
 #endif
 
-#define CUSTOM_BUFFER_SIZE 20
+#define CUSTOM_BUFFER_SIZE 40
 
 /**********************
  *      TYPEDEFS
