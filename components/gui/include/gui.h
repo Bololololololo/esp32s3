@@ -2,7 +2,6 @@
 #define GUI_H
 
 #include <iostream>
-#include <atomic>
 #include <memory>
 
 #include "lvgl.h"
