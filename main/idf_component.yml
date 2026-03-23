@@ -1,4 +1,5 @@
 dependencies:
-  espressif/led_strip: "^3.0.0"
+  espressif/led_strip: ^3.0.0
   espressif/catch2:
     version: '*'
+  espressif/gprof: ^0.2.0

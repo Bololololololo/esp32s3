@@ -29,6 +29,8 @@
 #include "esp_console.h"
 #include "cmd_catch2.h"
 
+#include "gprof.h"
+
 #define LOG_LEVEL ESP_LOG_INFO
 
 using namespace utils;
@@ -58,6 +60,9 @@ extern "C"
 void app_main(void)
 {
     ESP_LOGI(TAG, "Main APP started");
+
+    /* Enable profiling */
+    esp_gprof_init();
 
     /* Set log level  */
     esp_log_level_set("*", LOG_LEVEL);
@@ -137,6 +142,10 @@ void app_main(void)
 #endif
 
     ESP_ERROR_CHECK(esp_console_start_repl(repl));
+
+    /* Stop profiling and send results */
+    ESP_ERROR_CHECK(esp_gprof_save());
+    esp_gprof_deinit();
 
     while (1)
     {
