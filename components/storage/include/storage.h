@@ -44,6 +44,16 @@ public:
 
     uint32_t getTotalSectors() const { return total_sect; }
     uint32_t getFreeSectors() const { return free_sect; }
+
+    // trampoline Function for performance testing
+    static void writeWrapper(void *params)
+    {
+        // Cast the generic pointer back to our Object type
+        Storage *obj = static_cast<Storage *>(params);
+
+        // Call the member function with your desired arguments
+        obj->write_file("/sdcard/test.txt", "Hello, World!");
+    }
 };
 
 #endif /* Storage_H */
