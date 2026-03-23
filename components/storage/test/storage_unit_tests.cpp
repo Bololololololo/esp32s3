@@ -3,22 +3,31 @@
 
 TEST_CASE("Storage: Basic Operations", "[storage]")
 {
-    // Storage storage;
+    Storage *storage = Storage::getInstance();
+    esp_err_t ret;
+    char buffer[64];
 
-    // // Test adding items
-    // storage.addItem("item1", 10);
-    // storage.addItem("item2", 20);
+    // Test adding items
+    ret = storage->write_file("/sdcard/test.txt", "Hello, World!");
+    CHECK(ret == ESP_OK);
 
-    // REQUIRE(storage.getItemCount("item1") == 10);
-    // REQUIRE(storage.getItemCount("item2") == 20);
+    ret = storage->read_file("/sdcard/test.txt", buffer, sizeof(buffer));
+    CHECK(ret == ESP_OK);
+    CHECK(strcmp(buffer, "Hello, World!") == 0);
 
-    // // Test updating item count
-    // storage.updateItemCount("item1", 15);
-    // REQUIRE(storage.getItemCount("item1") == 15);
+    ret = storage->write_file("/sdcard/test.txt", "Updated Content");
+    CHECK(ret == ESP_OK);
 
-    // // Test removing items
-    // storage.removeItem("item2");
-    // REQUIRE(storage.getItemCount("item2") == 0);
+    ret = storage->read_file("/sdcard/test.txt", buffer, sizeof(buffer));
+    CHECK(ret == ESP_OK);
+    CHECK(strcmp(buffer, "Updated Content") == 0);
 
-    REQUIRE(1 == 1);
+    ret = storage->delete_file("/sdcard/test.txt");
+    CHECK(ret == ESP_OK);
+
+    ret = storage->read_file("/sdcard/test.txt", buffer, sizeof(buffer));
+    CHECK(ret == ESP_ERR_NOT_FOUND); // Expect file not found after deletion
+
+    ret = storage->delete_file("/sdcard/test.txt");
+    CHECK(ret == ESP_ERR_NOT_FOUND); // Expect file not found when trying to delete again
 }

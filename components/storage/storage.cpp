@@ -99,7 +99,7 @@ esp_err_t Storage::write_file(const char *path, char *data)
     if (f == NULL)
     {
         ESP_LOGE(TAG, "Failed to open file for writing");
-        return ESP_ERR_INVALID_ARG;
+        return ESP_FAIL;
     }
     fprintf(f, data);
     fclose(f);
@@ -108,24 +108,25 @@ esp_err_t Storage::write_file(const char *path, char *data)
     return ESP_OK;
 }
 
-esp_err_t Storage::read_file(const char *path)
+esp_err_t Storage::read_file(const char *path, char *buffer, size_t buffer_size)
 {
     ESP_LOGI(TAG, "Reading file %s", path);
     FILE *f = fopen(path, "r");
     if (f == NULL)
     {
         ESP_LOGE(TAG, "Failed to open file for reading");
-        return ESP_ERR_INVALID_ARG;
+        return ESP_ERR_NOT_FOUND;
     }
-    char line[64];
-    fgets(line, sizeof(line), f);
+
+    fgets(buffer, buffer_size, f);
     fclose(f);
 
     // Strip newline
-    char *pos = strchr(line, '\n');
+    char *pos = strchr(buffer, '\n');
     if (pos)
         *pos = '\0';
-    ESP_LOGI(TAG, "Read from file: '%s'", line);
+
+    ESP_LOGI(TAG, "Read from file: '%s'", buffer);
     return ESP_OK;
 }
 
@@ -135,6 +136,7 @@ esp_err_t Storage::delete_file(const char *path)
     if (unlink(path) != 0)
     {
         ESP_LOGE(TAG, "Failed to delete file");
+        return ESP_ERR_NOT_FOUND;
     }
 
     ESP_LOGI(TAG, "File deleted successfully");

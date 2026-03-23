@@ -29,6 +29,8 @@
 #include "esp_console.h"
 #include "cmd_catch2.h"
 
+#define LOG_LEVEL ESP_LOG_INFO
+
 using namespace utils;
 
 static const char *TAG = "main_app";
@@ -56,6 +58,10 @@ extern "C"
 void app_main(void)
 {
     ESP_LOGI(TAG, "Main APP started");
+
+    /* Set log level  */
+    esp_log_level_set("*", LOG_LEVEL);
+
     /* Configure the peripheral according to the LED type */
     StatusLED status_led;
     status_led.setColor(utils::StatusLEDColor::RED);
@@ -74,17 +80,17 @@ void app_main(void)
     ESP_ERROR_CHECK(esp_timer_start_periodic(lvgl_tick_timer, 1000));
 
     /* Initialize external storage */
-    // Storage *storage = Storage::getInstance();
-    // assert(storage != NULL);
-    // esp_err_t ret = storage->mount();
-    // if (ret != ESP_OK)
-    // {
-    //     ESP_LOGE(TAG, "Failed to mount SD card. Error: %s\n", esp_err_to_name(ret));
-    // }
-    // else
-    // {
-    //     ESP_LOGI(TAG, "SD card mounted successfully");
-    // }
+    Storage *storage = Storage::getInstance();
+    assert(storage != NULL);
+    esp_err_t ret = storage->mount();
+    if (ret != ESP_OK)
+    {
+        ESP_LOGE(TAG, "Failed to mount SD card. Error: %s\n", esp_err_to_name(ret));
+    }
+    else
+    {
+        ESP_LOGI(TAG, "SD card mounted successfully");
+    }
 
     /* Initialize the GUI */
     Gui *gui = Gui::getInstance();

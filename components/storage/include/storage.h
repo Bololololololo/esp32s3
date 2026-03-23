@@ -39,7 +39,7 @@ public:
     esp_err_t unmount();
 
     esp_err_t write_file(const char *path, char *data);
-    esp_err_t read_file(const char *path);
+    esp_err_t read_file(const char *path, char *buffer, size_t buffer_size);
     esp_err_t delete_file(const char *path);
 
     uint32_t getTotalSectors() const { return total_sect; }
