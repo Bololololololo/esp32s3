@@ -26,6 +26,9 @@
 #include "gui.h"
 #include "storage.h"
 
+#include "esp_console.h"
+#include "cmd_catch2.h"
+
 using namespace utils;
 
 static const char *TAG = "main_app";
@@ -71,17 +74,17 @@ void app_main(void)
     ESP_ERROR_CHECK(esp_timer_start_periodic(lvgl_tick_timer, 1000));
 
     /* Initialize external storage */
-    Storage *storage = Storage::getInstance();
-    assert(storage != NULL);
-    esp_err_t ret = storage->mount();
-    if (ret != ESP_OK)
-    {
-        ESP_LOGE(TAG, "Failed to mount SD card. Error: %s\n", esp_err_to_name(ret));
-    }
-    else
-    {
-        ESP_LOGI(TAG, "SD card mounted successfully");
-    }
+    // Storage *storage = Storage::getInstance();
+    // assert(storage != NULL);
+    // esp_err_t ret = storage->mount();
+    // if (ret != ESP_OK)
+    // {
+    //     ESP_LOGE(TAG, "Failed to mount SD card. Error: %s\n", esp_err_to_name(ret));
+    // }
+    // else
+    // {
+    //     ESP_LOGI(TAG, "SD card mounted successfully");
+    // }
 
     /* Initialize the GUI */
     Gui *gui = Gui::getInstance();
@@ -100,6 +103,34 @@ void app_main(void)
         NULL,                     // Handle
         1                         // <--- Pinned to Core 1
     );
+
+    // Configure console
+    esp_console_repl_t *repl = NULL;
+    esp_console_repl_config_t repl_config = ESP_CONSOLE_REPL_CONFIG_DEFAULT();
+    repl_config.prompt = "catch2>";
+    repl_config.task_stack_size = 10000;
+
+    /* Register commands */
+    esp_console_register_help_command();
+    register_catch2("test");
+
+#if defined(CONFIG_ESP_CONSOLE_UART_DEFAULT) || defined(CONFIG_ESP_CONSOLE_UART_CUSTOM)
+    esp_console_dev_uart_config_t hw_config = ESP_CONSOLE_DEV_UART_CONFIG_DEFAULT();
+    ESP_ERROR_CHECK(esp_console_new_repl_uart(&hw_config, &repl_config, &repl));
+
+#elif defined(CONFIG_ESP_CONSOLE_USB_CDC)
+    esp_console_dev_usb_cdc_config_t hw_config = ESP_CONSOLE_DEV_CDC_CONFIG_DEFAULT();
+    ESP_ERROR_CHECK(esp_console_new_repl_usb_cdc(&hw_config, &repl_config, &repl));
+
+#elif defined(CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG)
+    esp_console_dev_usb_serial_jtag_config_t hw_config = ESP_CONSOLE_DEV_USB_SERIAL_JTAG_CONFIG_DEFAULT();
+    ESP_ERROR_CHECK(esp_console_new_repl_usb_serial_jtag(&hw_config, &repl_config, &repl));
+
+#else
+#error Unsupported console type
+#endif
+
+    ESP_ERROR_CHECK(esp_console_start_repl(repl));
 
     while (1)
     {

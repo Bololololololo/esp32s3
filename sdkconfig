@@ -661,6 +661,12 @@ CONFIG_COMPILER_ORPHAN_SECTIONS_WARNING=y
 #
 
 #
+# Console Library
+#
+# CONFIG_CONSOLE_SORTED_HELP is not set
+# end of Console Library
+
+#
 # Driver Configurations
 #
 
