@@ -9,12 +9,10 @@
 
 using namespace utils;
 
-class Gui
-{
-private:
+class Gui {
+  private:
     static std::unique_ptr<Gui> instance;
-    struct _cons
-    {
+    struct _cons {
         explicit _cons() = default;
     };
 
@@ -33,16 +31,15 @@ private:
     void debugTabCreate(lv_obj_t *parent);
     static void event_handler(lv_event_t *e);
 
-public:
-    Gui(_cons) {}
+  public:
+    Gui(_cons) {
+    }
 
-    static std::unique_ptr<Gui> instanceFactory()
-    {
+    static std::unique_ptr<Gui> instanceFactory() {
         return std::make_unique<Gui>(_cons{});
     }
 
-    static Gui *getInstance()
-    {
+    static Gui *getInstance() {
         /*
             If control enters the declaration concurrently while the variable is being initialized,
             the concurrent execution shall wait for completion of the initialization.

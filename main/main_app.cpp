@@ -6,28 +6,28 @@
    software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
    CONDITIONS OF ANY KIND, either express or implied.
 */
-#include <memory>
-#include <iostream>
+#include "esp_check.h"
+#include "esp_err.h"
+#include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#include "esp_log.h"
-#include "esp_err.h"
-#include "esp_check.h"
+#include <iostream>
+#include <memory>
 
-#include "sdkconfig.h"
 #include "esp_system.h"
+#include "sdkconfig.h"
 
-#include "lvgl.h"
+#include "esp_timer.h"
 #include "lv_port_disp.h"
 #include "lv_port_indev.h"
-#include "esp_timer.h"
+#include "lvgl.h"
 
-#include "status_led.h"
 #include "gui.h"
+#include "status_led.h"
 #include "storage.h"
 
-#include "esp_console.h"
 #include "cmd_catch2.h"
+#include "esp_console.h"
 
 #include "gprof.h"
 
@@ -38,31 +38,26 @@ using namespace utils;
 static const char *TAG = "main_app";
 
 // Task created for GUI to run in separate core
-void vTaskGui(void *pvParameters)
-{
-    while (1)
-    {
+void vTaskGui(void *pvParameters) {
+    while (1) {
         lv_task_handler();
         vTaskDelay(pdMS_TO_TICKS(10));
     }
 }
 
-static void inc_lvgl_tick(void *arg)
-{
+static void inc_lvgl_tick(void *arg) {
     lv_tick_inc(1);
 }
 
-extern "C"
-{
-    void app_main(void);
+extern "C" {
+void app_main(void);
 }
 
-void app_main(void)
-{
+void app_main(void) {
     ESP_LOGI(TAG, "Main APP started");
 
     /* Enable profiling */
-    esp_gprof_init();
+    // esp_gprof_init();
 
     /* Set log level  */
     esp_log_level_set("*", LOG_LEVEL);
@@ -76,9 +71,7 @@ void app_main(void)
     lv_port_disp_init();  // init display
     lv_port_indev_init(); // init touch screen
 
-    const esp_timer_create_args_t lvgl_tick_timer_args = {
-        .callback = &inc_lvgl_tick,
-        .name = "lvgl_tick"};
+    const esp_timer_create_args_t lvgl_tick_timer_args = {.callback = &inc_lvgl_tick, .name = "lvgl_tick"};
     esp_timer_handle_t lvgl_tick_timer = NULL;
 
     ESP_ERROR_CHECK(esp_timer_create(&lvgl_tick_timer_args, &lvgl_tick_timer));
@@ -88,12 +81,9 @@ void app_main(void)
     Storage *storage = Storage::getInstance();
     assert(storage != NULL);
     esp_err_t ret = storage->mount();
-    if (ret != ESP_OK)
-    {
+    if (ret != ESP_OK) {
         ESP_LOGE(TAG, "Failed to mount SD card. Error: %s\n", esp_err_to_name(ret));
-    }
-    else
-    {
+    } else {
         ESP_LOGI(TAG, "SD card mounted successfully");
     }
 
@@ -105,14 +95,13 @@ void app_main(void)
     status_led.setColor(utils::StatusLEDColor::GREEN);
 
     // Run GUI task on a separate core to ensure smooth performance
-    xTaskCreatePinnedToCore(
-        vTaskGui,                 // Function
-        "Core1_Task",             // Name
-        8192,                     // Stack size
-        NULL,                     // Parameter
-        configMAX_PRIORITIES - 1, // Priority
-        NULL,                     // Handle
-        1                         // <--- Pinned to Core 1
+    xTaskCreatePinnedToCore(vTaskGui,                 // Function
+                            "Core1_Task",             // Name
+                            8192,                     // Stack size
+                            NULL,                     // Parameter
+                            configMAX_PRIORITIES - 1, // Priority
+                            NULL,                     // Handle
+                            1                         // <--- Pinned to Core 1
     );
 
     // Configure console
@@ -144,11 +133,10 @@ void app_main(void)
     ESP_ERROR_CHECK(esp_console_start_repl(repl));
 
     /* Stop profiling and send results */
-    ESP_ERROR_CHECK(esp_gprof_save());
-    esp_gprof_deinit();
+    // ESP_ERROR_CHECK(esp_gprof_save());
+    // esp_gprof_deinit();
 
-    while (1)
-    {
+    while (1) {
         vTaskDelay(pdMS_TO_TICKS(100));
     }
 }

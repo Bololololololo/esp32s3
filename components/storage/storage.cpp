@@ -1,26 +1,23 @@
-#include <stdio.h>
-#include <memory>
-#include "storage.h"
+#include <fstream>
+#include <iostream>
 
+#include "driver/sdmmc_host.h"
 #include "esp_system.h"
 #include "esp_vfs_fat.h"
 #include "sdmmc_cmd.h"
-#include "driver/sdmmc_host.h"
+#include "storage.h"
 
 static const char *TAG = "sdmmc";
 
 #define MOUNT_POINT "/sdcard"
 #define SD_DATA_LINES 4
 
-esp_err_t Storage::mount()
-{
+esp_err_t Storage::mount() {
     esp_err_t ret{ESP_FAIL};
 
     // 1. Options for mounting the filesystem
     esp_vfs_fat_sdmmc_mount_config_t mount_config = {
-        .format_if_mount_failed = false,
-        .max_files = 5,
-        .allocation_unit_size = 16 * 1024};
+        .format_if_mount_failed = false, .max_files = 5, .allocation_unit_size = 16 * 1024};
 
     sdmmc_card_t *card;
     const char mount_point[] = MOUNT_POINT;
@@ -45,8 +42,7 @@ esp_err_t Storage::mount()
     // 4. Mount the drive
     ret = esp_vfs_fat_sdmmc_mount(mount_point, &host, &slot_config, &mount_config, &card);
 
-    if (ret != ESP_OK)
-    {
+    if (ret != ESP_OK) {
         ESP_LOGE(TAG, "Failed to mount SD card. Error: %s\n", esp_err_to_name(ret));
         return ret;
     }
@@ -71,19 +67,16 @@ esp_err_t Storage::mount()
     return ESP_OK;
 }
 
-esp_err_t Storage::unmount()
-{
+esp_err_t Storage::unmount() {
     esp_err_t ret{ESP_FAIL};
     ret = esp_vfs_fat_sdcard_unmount(MOUNT_POINT, card);
 
-    if (card == nullptr)
-    {
+    if (card == nullptr) {
         ESP_LOGE(TAG, "SD card was not mounted, skipping unmount.");
         return ESP_FAIL;
     }
 
-    if (ret != ESP_OK)
-    {
+    if (ret != ESP_OK) {
         ESP_LOGE(TAG, "Failed to unmount SD card. Error: %s\n", esp_err_to_name(ret));
         return ret;
     }
@@ -92,49 +85,43 @@ esp_err_t Storage::unmount()
     return ESP_OK;
 }
 
-esp_err_t Storage::write_file(const char *path, char *data)
-{
+esp_err_t Storage::write_file(const char *path, char *data, std::ios_base::openmode mode) {
     ESP_LOGI(TAG, "Opening file %s", path);
-    FILE *f = fopen(path, "w");
-    if (f == NULL)
-    {
+
+    std::ofstream outFile(path, std::ios::binary | mode);
+
+    if (!outFile.is_open()) {
         ESP_LOGE(TAG, "Failed to open file for writing");
         return ESP_FAIL;
     }
-    fprintf(f, data);
-    fclose(f);
+
+    outFile << data;
+    outFile.close();
 
     ESP_LOGI(TAG, "File written");
     return ESP_OK;
 }
 
-esp_err_t Storage::read_file(const char *path, char *buffer, size_t buffer_size)
-{
+esp_err_t Storage::read_file(const char *path, char *buffer, size_t buffer_size) {
     ESP_LOGI(TAG, "Reading file %s", path);
-    FILE *f = fopen(path, "r");
-    if (f == NULL)
-    {
+
+    std::ifstream inFile(path);
+    if (!inFile.is_open()) {
         ESP_LOGE(TAG, "Failed to open file for reading");
         return ESP_ERR_NOT_FOUND;
     }
 
-    fgets(buffer, buffer_size, f);
-    fclose(f);
-
-    // Strip newline
-    char *pos = strchr(buffer, '\n');
-    if (pos)
-        *pos = '\0';
+    inFile.read(buffer, buffer_size - 1); // Leave space for null terminator
+    buffer[inFile.gcount()] = '\0';       // Null-terminate the buffer
+    inFile.close();
 
     ESP_LOGI(TAG, "Read from file: '%s'", buffer);
     return ESP_OK;
 }
 
-esp_err_t Storage::delete_file(const char *path)
-{
+esp_err_t Storage::delete_file(const char *path) {
     ESP_LOGI(TAG, "Deleting file %s", path);
-    if (unlink(path) != 0)
-    {
+    if (unlink(path) != 0) {
         ESP_LOGE(TAG, "Failed to delete file");
         return ESP_ERR_NOT_FOUND;
     }

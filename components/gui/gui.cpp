@@ -1,16 +1,14 @@
 #include <iostream>
 
-#include "gui.h"
 #include "esp_log.h"
+#include "gui.h"
 
 static const char *TAG = "gui";
 
-void Gui::event_handler(lv_event_t *e)
-{
+void Gui::event_handler(lv_event_t *e) {
     lv_event_code_t code = lv_event_get_code(e);
     lv_obj_t *obj = lv_event_get_target(e);
-    if (code == LV_EVENT_VALUE_CHANGED)
-    {
+    if (code == LV_EVENT_VALUE_CHANGED) {
         const char *txt = lv_checkbox_get_text(obj);
         const char *state = lv_obj_get_state(obj) & LV_STATE_CHECKED ? "Checked" : "Unchecked";
         LV_LOG_USER("%s: %s", txt, state);
@@ -18,8 +16,7 @@ void Gui::event_handler(lv_event_t *e)
     }
 }
 
-void Gui::init()
-{
+void Gui::init() {
     font_normal = LV_FONT_DEFAULT;
     font_large = LV_FONT_DEFAULT;
 
@@ -39,8 +36,8 @@ void Gui::init()
 #endif
 
 #if LV_USE_THEME_DEFAULT
-    lv_theme_default_init(NULL, lv_palette_main(LV_PALETTE_BLUE), lv_palette_main(LV_PALETTE_RED), LV_THEME_DEFAULT_DARK,
-                          font_normal);
+    lv_theme_default_init(NULL, lv_palette_main(LV_PALETTE_BLUE), lv_palette_main(LV_PALETTE_RED),
+                          LV_THEME_DEFAULT_DARK, font_normal);
 #endif
 
     lv_style_init(&style_text_muted);
@@ -70,8 +67,7 @@ void Gui::init()
     settingsTabCreate(t3);
 }
 
-void Gui::mainTabCreate(lv_obj_t *parent)
-{
+void Gui::mainTabCreate(lv_obj_t *parent) {
     lv_obj_t *panel1 = lv_obj_create(parent);
     lv_obj_set_height(panel1, LV_SIZE_CONTENT);
 
@@ -115,8 +111,7 @@ void Gui::mainTabCreate(lv_obj_t *parent)
     lv_obj_set_grid_cell(menu_btn3, LV_GRID_ALIGN_STRETCH, 0, 2, LV_GRID_ALIGN_CENTER, 2, 1);
 }
 
-void Gui::settingsTabCreate(lv_obj_t *parent)
-{
+void Gui::settingsTabCreate(lv_obj_t *parent) {
     lv_obj_t *panel1 = lv_obj_create(parent);
     lv_obj_add_flag(panel1, LV_OBJ_FLAG_FLEX_IN_NEW_TRACK);
     lv_obj_set_height(panel1, LV_PCT(100));
@@ -148,8 +143,7 @@ void Gui::settingsTabCreate(lv_obj_t *parent)
     lv_obj_update_layout(cb);
 }
 
-void Gui::debugTabCreate(lv_obj_t *parent)
-{
+void Gui::debugTabCreate(lv_obj_t *parent) {
     lv_obj_t *panel1 = lv_obj_create(parent);
     lv_obj_set_height(panel1, LV_SIZE_CONTENT);
 
@@ -158,16 +152,20 @@ void Gui::debugTabCreate(lv_obj_t *parent)
     lv_label_set_text_fmt(cpu_freq_label, "CPU Frequency: %" LV_PRId32 " MHz", sys_info.getCpuFreqMHz());
 
     lv_obj_t *total_free_dram_label = lv_label_create(panel1);
-    lv_label_set_text_fmt(total_free_dram_label, "Total free DRAM available:  %u KB", sys_info.getTotalFreeDRAMSizeKB());
+    lv_label_set_text_fmt(total_free_dram_label, "Total free DRAM available:  %u KB",
+                          sys_info.getTotalFreeDRAMSizeKB());
 
     lv_obj_t *total_free_iram_label = lv_label_create(panel1);
-    lv_label_set_text_fmt(total_free_iram_label, "Total free Internal DRAM available:  %u KB", sys_info.getFreeInternalDRAMSizeKB());
+    lv_label_set_text_fmt(total_free_iram_label, "Total free Internal DRAM available:  %u KB",
+                          sys_info.getFreeInternalDRAMSizeKB());
 
     lv_obj_t *total_internal_mem_pool = lv_label_create(panel1);
-    lv_label_set_text_fmt(total_internal_mem_pool, "Total Internal RAM size:  %u KB", sys_info.getTotalInternalSizeKB());
+    lv_label_set_text_fmt(total_internal_mem_pool, "Total Internal RAM size:  %u KB",
+                          sys_info.getTotalInternalSizeKB());
 
     lv_obj_t *total_external_mem_pool = lv_label_create(panel1);
-    lv_label_set_text_fmt(total_external_mem_pool, "Total External PSRAM available:  %u KB", sys_info.getTotalPsramSize());
+    lv_label_set_text_fmt(total_external_mem_pool, "Total External PSRAM available:  %u KB",
+                          sys_info.getTotalPsramSize());
 
     lv_obj_t *storage_size_label = lv_label_create(panel1);
     lv_label_set_text(storage_size_label, "Storage Size: 16GB");
@@ -184,8 +182,7 @@ void Gui::debugTabCreate(lv_obj_t *parent)
                                           LV_GRID_CONTENT, /*PSRAM size*/
                                           LV_GRID_CONTENT, /*Memory pool size*/
                                           LV_GRID_CONTENT, /*Storage size*/
-                                          LV_GRID_CONTENT,
-                                          LV_GRID_TEMPLATE_LAST};
+                                          LV_GRID_CONTENT, LV_GRID_TEMPLATE_LAST};
 
     lv_obj_set_grid_dsc_array(panel1, grid_1_col_dsc, grid_1_row_dsc);
 

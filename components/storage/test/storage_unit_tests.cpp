@@ -1,17 +1,17 @@
-#include <catch2/catch_test_macros.hpp>
 #include "../include/storage.h"
 #include "esp_log.h"
 #include "xtensa_perfmon_apis.h"
+#include <catch2/catch_test_macros.hpp>
 
 static const char *TAG = "StorageUnitTests";
 
-TEST_CASE("Storage: Basic Operations", "[storage]")
-{
+TEST_CASE("Storage: Basic Operations", "[storage]") {
+    ESP_LOGI(TAG, "Running Storage: Basic Operations");
     Storage *storage = Storage::getInstance();
     esp_err_t ret;
     char buffer[64];
 
-    // Test adding items
+    // Test writting to a file
     ret = storage->write_file("/sdcard/test.txt", "Hello, World!");
     CHECK(ret == ESP_OK);
 
@@ -19,12 +19,21 @@ TEST_CASE("Storage: Basic Operations", "[storage]")
     CHECK(ret == ESP_OK);
     CHECK(strcmp(buffer, "Hello, World!") == 0);
 
+    // Test overwriting the file
     ret = storage->write_file("/sdcard/test.txt", "Updated Content");
     CHECK(ret == ESP_OK);
 
     ret = storage->read_file("/sdcard/test.txt", buffer, sizeof(buffer));
     CHECK(ret == ESP_OK);
     CHECK(strcmp(buffer, "Updated Content") == 0);
+
+    // Test appending to the file
+    ret = storage->write_file("/sdcard/test.txt", " Appended Text", std::ios::app);
+    CHECK(ret == ESP_OK);
+
+    ret = storage->read_file("/sdcard/test.txt", buffer, sizeof(buffer));
+    CHECK(ret == ESP_OK);
+    CHECK(strcmp(buffer, "Updated Content Appended Text") == 0);
 
     ret = storage->delete_file("/sdcard/test.txt");
     CHECK(ret == ESP_OK);
@@ -37,18 +46,16 @@ TEST_CASE("Storage: Basic Operations", "[storage]")
 }
 
 // 1. Define the function you want to profile
-void my_test_function(void *params)
-{
+void my_test_function(void *params) {
     volatile int counter = 0;
-    for (int i = 0; i < 1000; i++)
-    {
+    for (int i = 0; i < 1000; i++) {
         counter++;
     }
 }
 
 /* TBD fix result output as no output is seen from the callback result function */
-TEST_CASE("Storage: example of performance testing")
-{
+TEST_CASE("Storage: example of performance testing") {
+    ESP_LOGI(TAG, "Storage: example of performance testing");
     Storage *storage = Storage::getInstance();
     esp_err_t ret;
 
