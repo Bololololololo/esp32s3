@@ -610,6 +610,13 @@ CONFIG_BLINK_PERIOD=1000
 # end of Example Configuration
 
 #
+# Bolo's project settings
+#
+CONFIG_STORAGE_TESTS=y
+CONFIG_UTILS_TESTS=y
+# end of Bolo's project settings
+
+#
 # Compiler options
 #
 CONFIG_COMPILER_OPTIMIZATION_DEBUG=y

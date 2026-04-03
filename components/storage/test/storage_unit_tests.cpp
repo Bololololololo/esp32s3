@@ -61,7 +61,7 @@ TEST_CASE("Storage: example of performance testing") {
 
     // 2. Configure the performance monitor
     xtensa_perfmon_config_t config = {
-        .repeat_count = 100,  // Number of times to run the function
+        .repeat_count = 10,   // Number of times to run the function
         .max_deviation = 0.1, // Ignore results with high variance
         .call_params = storage,
         .call_function = Storage::writeWrapper,

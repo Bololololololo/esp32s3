@@ -47,3 +47,17 @@ menu "Example Configuration"
             Define the blinking period in milliseconds.
 
 endmenu
+
+menu "Bolo's project settings"
+    config STORAGE_TESTS
+        bool "Enable Storage Tests"
+        default n
+        help
+            Enables storage tests and adds them to the image. This will increase the image size and may affect performance, so it should only be enabled during development and testing.
+    
+    config UTILS_TESTS
+        bool "Enable Utils Tests"
+        default n
+        help
+            Enables utils tests and adds them to the image. This will increase the image size and may affect performance, so it should only be enabled during development and testing.          
+endmenu

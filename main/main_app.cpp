@@ -108,7 +108,7 @@ void app_main(void) {
     esp_console_repl_t *repl = NULL;
     esp_console_repl_config_t repl_config = ESP_CONSOLE_REPL_CONFIG_DEFAULT();
     repl_config.prompt = "catch2>";
-    repl_config.task_stack_size = 10000;
+    repl_config.task_stack_size = 100000;
 
     /* Register commands */
     esp_console_register_help_command();

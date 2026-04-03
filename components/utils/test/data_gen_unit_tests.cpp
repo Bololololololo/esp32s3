@@ -10,10 +10,10 @@ TEST_CASE("Data generator: Basic Operations", "[data generator]") {
     ESP_LOGI(TAG, "Data generator: Basic Operations");
     Storage *storage = Storage::getInstance();
     int size_of_data = 100;
-    esp_err_t ret;
     char buffer[size_of_data];
+    esp_err_t ret;
 
-    const char *file_path = "/sdcard/test_random_data.txt";
+    const char *file_path = "/sdcard/tst.txt";
 
     write_random_char_data(file_path, size_of_data);
 
