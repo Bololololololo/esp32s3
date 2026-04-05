@@ -2,6 +2,7 @@
 #include "esp_log.h"
 #include "xtensa_perfmon_apis.h"
 #include <catch2/catch_test_macros.hpp>
+#include <filesystem>
 
 static const char *TAG = "StorageUnitTests";
 
@@ -11,37 +12,44 @@ TEST_CASE("Storage: Basic Operations", "[storage]") {
     esp_err_t ret;
     char buffer[64];
 
+    const char *file_path = "/sdcard/test.txt";
+
+    if (std::filesystem::exists(file_path)) {
+        ret = storage->delete_file(file_path);
+        REQUIRE(ret == ESP_OK);
+    }
+
     // Test writting to a file
-    ret = storage->write_file("/sdcard/test.txt", "Hello, World!");
+    ret = storage->write_file(file_path, "Hello, World!");
     CHECK(ret == ESP_OK);
 
-    ret = storage->read_file("/sdcard/test.txt", buffer, sizeof(buffer));
+    ret = storage->read_file(file_path, buffer, sizeof(buffer));
     CHECK(ret == ESP_OK);
     CHECK(strcmp(buffer, "Hello, World!") == 0);
 
     // Test overwriting the file
-    ret = storage->write_file("/sdcard/test.txt", "Updated Content");
+    ret = storage->write_file(file_path, "Updated Content");
     CHECK(ret == ESP_OK);
 
-    ret = storage->read_file("/sdcard/test.txt", buffer, sizeof(buffer));
+    ret = storage->read_file(file_path, buffer, sizeof(buffer));
     CHECK(ret == ESP_OK);
     CHECK(strcmp(buffer, "Updated Content") == 0);
 
     // Test appending to the file
-    ret = storage->write_file("/sdcard/test.txt", " Appended Text", std::ios::app);
+    ret = storage->write_file(file_path, " Appended Text", std::ios::app);
     CHECK(ret == ESP_OK);
 
-    ret = storage->read_file("/sdcard/test.txt", buffer, sizeof(buffer));
+    ret = storage->read_file(file_path, buffer, sizeof(buffer));
     CHECK(ret == ESP_OK);
     CHECK(strcmp(buffer, "Updated Content Appended Text") == 0);
 
-    ret = storage->delete_file("/sdcard/test.txt");
+    ret = storage->delete_file(file_path);
     CHECK(ret == ESP_OK);
 
-    ret = storage->read_file("/sdcard/test.txt", buffer, sizeof(buffer));
+    ret = storage->read_file(file_path, buffer, sizeof(buffer));
     CHECK(ret == ESP_ERR_NOT_FOUND); // Expect file not found after deletion
 
-    ret = storage->delete_file("/sdcard/test.txt");
+    ret = storage->delete_file(file_path);
     CHECK(ret == ESP_ERR_NOT_FOUND); // Expect file not found when trying to delete again
 }
 

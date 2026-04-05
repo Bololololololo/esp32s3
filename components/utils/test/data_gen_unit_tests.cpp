@@ -2,6 +2,7 @@
 #include "esp_log.h"
 #include "storage.h"
 #include <catch2/catch_test_macros.hpp>
+#include <filesystem>
 #include <fstream>
 
 static const char *TAG = "DataGeneratorUnitTests";
@@ -13,7 +14,12 @@ TEST_CASE("Data generator: Basic Operations", "[data generator]") {
     char buffer[size_of_data];
     esp_err_t ret;
 
-    const char *file_path = "/sdcard/tst.txt";
+    const char *file_path = "/sdcard/test.txt";
+
+    if (std::filesystem::exists(file_path)) {
+        ret = storage->delete_file(file_path);
+        REQUIRE(ret == ESP_OK);
+    }
 
     write_random_char_data(file_path, size_of_data);
 
@@ -24,10 +30,8 @@ TEST_CASE("Data generator: Basic Operations", "[data generator]") {
     }
 
     file.read(buffer, sizeof(buffer));
-    ESP_LOGI(TAG, "Read %lu bytes from file", file.gcount());
-    ESP_LOGI(TAG, "Buffer content (hex): %s", std::string(buffer, file.gcount()).c_str());
     std::streamsize bytes_read = file.gcount();
-    REQUIRE(bytes_read == size_of_data);
-
     file.close();
+
+    REQUIRE(bytes_read == size_of_data);
 }
