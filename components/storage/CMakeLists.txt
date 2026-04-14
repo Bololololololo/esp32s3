@@ -12,5 +12,5 @@ endif()
 
 idf_component_register(SRCS "${SOURCES}"
                        INCLUDE_DIRS "include"
-                       PRIV_REQUIRES fatfs catch2 perfmon log
+                       PRIV_REQUIRES fatfs catch2 perfmon log interfaces message-router
                        ${extra_args})

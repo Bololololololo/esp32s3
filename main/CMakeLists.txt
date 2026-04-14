@@ -1,6 +1,6 @@
 idf_component_register(SRCS "main_app.cpp"
                        INCLUDE_DIRS "."
                        PRIV_REQUIRES lvgl lvgl_esp32_drivers lvgl_porting gui
-                        utils storage console gprof message-router)
+                        utils storage console gprof interfaces)
 
 target_link_libraries(${COMPONENT_LIB} PUBLIC "-pg")

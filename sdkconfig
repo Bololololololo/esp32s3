@@ -612,8 +612,9 @@ CONFIG_BLINK_PERIOD=1000
 #
 # Bolo's project settings
 #
-CONFIG_STORAGE_TESTS=y
-CONFIG_UTILS_TESTS=y
+# CONFIG_STORAGE_TESTS is not set
+# CONFIG_UTILS_TESTS is not set
+CONFIG_MSGR_TESTS=y
 # end of Bolo's project settings
 
 #

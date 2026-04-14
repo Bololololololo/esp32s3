@@ -31,8 +31,6 @@
 
 #include "gprof.h"
 
-#include "message-router.h"
-
 #define LOG_LEVEL ESP_LOG_INFO
 
 using namespace utils;
@@ -135,16 +133,9 @@ void app_main(void) {
     ESP_ERROR_CHECK(esp_console_start_repl(repl));
 
     /* Stop profiling and send results */
-    ESP_ERROR_CHECK(esp_gprof_save());
-    esp_gprof_deinit();
+    // ESP_ERROR_CHECK(esp_gprof_save());
+    // esp_gprof_deinit();
 
-    /* play time */
-    // MessageRouter *router = MessageRouter::getInstance();
-    // router->initialize();
-    // router->publish("test_topic", Message{.type = COMPONENT_ID_LVGL_DISPLAY, .payload = "Hello from main_app!"});
-    // router->publish("test_topic", Message{.type = COMPONENT_ID_BLE, .payload = "BLE status update from main_app!"});
-
-    // end of playtime
     while (1) {
         vTaskDelay(pdMS_TO_TICKS(100));
     }

@@ -2,19 +2,17 @@
 #define MESSAGE_ROUTER_H
 
 #include "componentIds.h"
+#include "componentInterf.h"
 #include "esp_err.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
 #include "freertos/task.h" // Usually needed to manage the tasks using the queue
 #include <memory>
 #include <stdio.h>
+#include <unordered_map>
+#include <vector>
 
 namespace messageRouter {
-
-struct Message {
-    ComponentId id;
-    char payload[256];
-};
 
 class MessageRouter {
   private:
@@ -23,12 +21,13 @@ class MessageRouter {
         explicit _cons() = default;
     };
 
+    std::unordered_map<ComponentId, std::vector<std::shared_ptr<ComponentInterface>>> subscribersDB;
+
     TaskHandle_t xRouterTask;
     QueueHandle_t xRouterQueue;
 
   public:
-    MessageRouter(_cons) {
-    }
+    MessageRouter(_cons);
 
     static std::unique_ptr<MessageRouter> instanceFactory() {
         return std::make_unique<MessageRouter>(_cons{});
@@ -43,10 +42,9 @@ class MessageRouter {
         return instance.get();
     }
 
-    esp_err_t initialize();
-
-    esp_err_t subscribe(char *topic);
-    esp_err_t publish(char *topic, const Message &message);
+    esp_err_t subscribe(ComponentId componentId, std::shared_ptr<ComponentInterface> subscriber);
+    esp_err_t unsubscribe(ComponentId componentId, std::shared_ptr<ComponentInterface> subscriber);
+    esp_err_t publish(const Message &message);
 };
 } // namespace messageRouter
 

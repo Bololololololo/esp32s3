@@ -60,4 +60,10 @@ menu "Bolo's project settings"
         default n
         help
             Enables utils tests and adds them to the image. This will increase the image size and may affect performance, so it should only be enabled during development and testing.          
+
+    config MSGR_TESTS
+        bool "Enable Message Router Tests"
+        default n
+        help
+            Enables message router tests and adds them to the image. This will increase the image size and may affect performance, so it should only be enabled during development and testing.          
 endmenu

@@ -1,11 +1,12 @@
 #ifndef Storage_H
 #define Storage_H
 
+#include "componentInterf.h"
 #include "esp_err.h"
 #include "sd_protocol_types.h"
 #include <memory>
 
-class Storage {
+class Storage : public ComponentInterface {
   private:
     static std::unique_ptr<Storage> instance;
     struct _cons {
@@ -17,7 +18,7 @@ class Storage {
     uint32_t free_sect{0};
 
   public:
-    Storage(_cons) {
+    Storage(_cons) : ComponentInterface(ComponentId::COMPONENT_ID_STORAGE) {
     }
 
     static std::unique_ptr<Storage> instanceFactory() {
@@ -55,6 +56,8 @@ class Storage {
         // Call the member function with your desired arguments
         obj->write_file("/sdcard/test.txt", "Hello, World!");
     }
+
+    esp_err_t messageHandler(const Message &msg) override;
 };
 
 #endif /* Storage_H */

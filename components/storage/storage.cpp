@@ -4,6 +4,7 @@
 #include "driver/sdmmc_host.h"
 #include "esp_system.h"
 #include "esp_vfs_fat.h"
+#include "message-router.h"
 #include "sdmmc_cmd.h"
 #include "storage.h"
 
@@ -11,6 +12,8 @@ static const char *TAG = "sdmmc";
 
 #define MOUNT_POINT "/sdcard"
 #define SD_DATA_LINES 4
+
+using namespace messageRouter;
 
 esp_err_t Storage::mount() {
     esp_err_t ret{ESP_FAIL};
@@ -63,7 +66,6 @@ esp_err_t Storage::mount() {
     free_sect = fre_clust * fs->csize;
 
     ESP_LOGI(TAG, "Free Space: %u MB / %u MB\n", (free_sect / 2048), (total_sect / 2048));
-
     return ESP_OK;
 }
 
@@ -127,5 +129,11 @@ esp_err_t Storage::delete_file(const char *path) {
     }
 
     ESP_LOGI(TAG, "File deleted successfully");
+    return ESP_OK;
+}
+
+esp_err_t Storage::messageHandler(const Message &msg) {
+    ESP_LOGI(TAG, "Storage received message: %s from id : %d", msg.payload, msg.id);
+    // Handle the message as needed
     return ESP_OK;
 }
