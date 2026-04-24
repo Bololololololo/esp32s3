@@ -3,3 +3,4 @@ dependencies:
   espressif/catch2:
     version: '*'
   espressif/gprof: ^0.2.0
+  wolfssl/wolfssl: ^5.8.2~1
