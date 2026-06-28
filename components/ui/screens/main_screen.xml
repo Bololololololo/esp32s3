@@ -1,0 +1,13 @@
+<screen>
+	<styles>
+		<style name="style_main" bg_color="0x300d51" />
+	</styles>
+
+	<view>
+		<style name="style_main" />
+
+		<lv_button align="center" style_bg_color="0xffffff">
+			<lv_label text="Welcome" style_text_font="font_medium" style_text_color="0x000000" />
+		</lv_button>
+	</view>
+</screen>
