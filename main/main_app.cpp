@@ -17,12 +17,12 @@
 #include "esp_system.h"
 #include "sdkconfig.h"
 
+#include "esp_lvgl_port.h"
 #include "esp_timer.h"
-#include "lv_port_disp.h"
-#include "lv_port_indev.h"
+// #include "lv_port_indev.h"
 #include "lvgl.h"
 
-#include "gui.h"
+// #include "gui.h"
 #include "status_led.h"
 #include "storage.h"
 
@@ -67,9 +67,10 @@ void app_main(void) {
     status_led.setColor(utils::StatusLEDColor::RED);
 
     /* Initialize display*/
-    lv_init();            // init lvgl
-    lv_port_disp_init();  // init display
-    lv_port_indev_init(); // init touch screen
+    lv_init(); // init lvgl
+    const lvgl_port_cfg_t lvgl_cfg = ESP_LVGL_PORT_INIT_CONFIG();
+    esp_err_t err = lvgl_port_init(&lvgl_cfg);
+    // lv_port_indev_init(); // init touch screen
 
     const esp_timer_create_args_t lvgl_tick_timer_args = {.callback = &inc_lvgl_tick, .name = "lvgl_tick"};
     esp_timer_handle_t lvgl_tick_timer = NULL;
@@ -88,9 +89,9 @@ void app_main(void) {
     }
 
     /* Initialize the GUI */
-    Gui *gui = Gui::getInstance();
-    assert(gui != NULL);
-    gui->init();
+    // Gui *gui = Gui::getInstance();
+    // assert(gui != NULL);
+    // gui->init();
 
     status_led.setColor(utils::StatusLEDColor::GREEN);
 

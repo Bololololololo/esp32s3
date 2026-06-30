@@ -4,3 +4,5 @@ dependencies:
     version: '*'
   espressif/gprof: ^0.2.0
   wolfssl/wolfssl: ^5.8.2~1
+  lvgl/lvgl: ^9.5.0
+  espressif/esp_lvgl_port: ^2.8.0~1
