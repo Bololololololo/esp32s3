@@ -12,6 +12,7 @@ using namespace utils;
 class Gui {
   private:
     static std::unique_ptr<Gui> instance;
+
     struct _cons {
         explicit _cons() = default;
     };
@@ -27,8 +28,9 @@ class Gui {
     SystemInfo sys_info;
 
     void initDisplay();
+    void initTouch();
 
-    // void mainTabCreate(lv_obj_t *parent);
+ // void mainTabCreate(lv_obj_t *parent);
     // void settingsTabCreate(lv_obj_t *parent);
     // void debugTabCreate(lv_obj_t *parent);
     // static void event_handler(lv_event_t *e);
