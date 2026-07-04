@@ -13,5 +13,5 @@ endif()
 
 idf_component_register(SRCS "${SOURCES}"
                        INCLUDE_DIRS "include"
-                       PRIV_REQUIRES esp_psram driver led_strip esp_hw_support esp_system catch2 storage interfaces
+                       PRIV_REQUIRES esp_psram driver led_strip esp_hw_support esp_system catch2 storage interfaces sdmmc esp_driver_gpio
                        ${extra_args})

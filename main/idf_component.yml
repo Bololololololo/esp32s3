@@ -3,6 +3,7 @@ dependencies:
   espressif/catch2:
     version: '*'
   espressif/gprof: ^0.2.0
-  wolfssl/wolfssl: ^5.8.2~1
   lvgl/lvgl: ^9.5.0
   espressif/esp_lvgl_port: ^2.8.0~1
+  espressif/esp_lcd_ili9341: ^2.0.2
+  cfscn/esp_lcd_touch_ft6x36: ^1.0.8

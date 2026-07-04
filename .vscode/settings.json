@@ -17,5 +17,5 @@
     "--compile-commands-dir=/home/bololo/Work/esp32s3/Trial_1/build"
   ],
   "idf.flashType": "JTAG",
-  "idf.currentSetup": "/home/bololo/esp/esp-idf"
+  "idf.currentSetup": "/opt/esp/idf"
 }
