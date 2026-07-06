@@ -276,6 +276,8 @@ void Gui::initTouch(void)
     esp_lcd_panel_io_i2c_config_t tp_io_config = ESP_LCD_TOUCH_IO_I2C_FT6x36_CONFIG();
     tp_io_config.scl_speed_hz = TOUCH_I2C_CLK_HZ;
     esp_lcd_new_panel_io_i2c(i2c_handle, &tp_io_config, &tp_io_handle);
+    // we need to wait so the i2c has time to initialize
+    vTaskDelay(pdMS_TO_TICKS(50));
     esp_lcd_touch_new_i2c_ft6x36(tp_io_handle, &tp_cfg, &touch_handle);
 }
 
