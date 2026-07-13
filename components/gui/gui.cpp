@@ -23,6 +23,8 @@
 #include "esp_lcd_panel_io.h"
 #include "esp_lcd_touch_ft6x36.h"
 
+#include "lvgl_ui_editor/examples.h"
+
 static const char *TAG = "gui";
 
 #define LCD_HOST SPI2_HOST
@@ -112,29 +114,7 @@ static void app_main_display(void)
     /* Task lock */
     lvgl_port_lock(0);
 
-    /* Your LVGL objects code here .... */
-
-    /* Label */
-    lv_obj_t *label = lv_label_create(scr);
-    lv_obj_set_width(label, LCD_H_RES);
-    lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
-#if LVGL_VERSION_MAJOR == 8
-    lv_label_set_recolor(label, true);
-    lv_label_set_text(label,
-                      "#FF0000 "LV_SYMBOL_BELL" Hello world Espressif and LVGL "LV_SYMBOL_BELL"#\n#FF9400 "LV_SYMBOL_WARNING" For simplier initialization, use BSP "LV_SYMBOL_WARNING" #");
-#else
-    lv_label_set_text(label,
-                      LV_SYMBOL_BELL" Hello world Espressif and LVGL "LV_SYMBOL_BELL"\n "LV_SYMBOL_WARNING" For simplier initialization, use BSP "LV_SYMBOL_WARNING);
-#endif
-    lv_obj_align(label, LV_ALIGN_CENTER, 0, -30);
-
-    /* Button */
-    lv_obj_t *btn = lv_btn_create(scr);
-    label = lv_label_create(btn);
-    lv_label_set_text_static(label, "Rotate screen");
-    lv_obj_set_size(btn, 320, 240);
-    lv_obj_align(btn, LV_ALIGN_CENTER, 0, 0);
-    lv_obj_add_event_cb(btn, _app_button_cb, LV_EVENT_CLICKED, NULL);
+    examples_init("/lvgl_ui_editor/");
 
     /* Task unlock */
     lvgl_port_unlock();
