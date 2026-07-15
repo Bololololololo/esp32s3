@@ -4,17 +4,17 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <stdio.h>
-#include <string.h>
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "esp_system.h"
-#include "esp_err.h"
-#include "esp_log.h"
-#include "esp_check.h"
 #include "driver/gpio.h"
+#include "esp_check.h"
+#include "esp_err.h"
 #include "esp_lcd_panel_io.h"
 #include "esp_lcd_touch.h"
+#include "esp_log.h"
+#include "esp_system.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include <stdio.h>
+#include <string.h>
 
 static const char *TAG = "FT6x36";
 
@@ -49,7 +49,8 @@ static const char *TAG = "FT6x36";
  * Function definitions
  *******************************************************************************/
 static esp_err_t esp_lcd_touch_ft6x36_read_data(esp_lcd_touch_handle_t tp);
-static bool esp_lcd_touch_ft6x36_get_xy(esp_lcd_touch_handle_t tp, uint16_t *x, uint16_t *y, uint16_t *strength, uint8_t *point_num, uint8_t max_point_num);
+static bool esp_lcd_touch_ft6x36_get_xy(esp_lcd_touch_handle_t tp, uint16_t *x, uint16_t *y, uint16_t *strength,
+                                        uint8_t *point_num, uint8_t max_point_num);
 static esp_err_t esp_lcd_touch_ft6x36_del(esp_lcd_touch_handle_t tp);
 
 /* I2C read */
@@ -65,8 +66,8 @@ static esp_err_t touch_ft6x36_reset(esp_lcd_touch_handle_t tp);
  * Public API functions
  *******************************************************************************/
 
-esp_err_t esp_lcd_touch_new_i2c_ft6x36(const esp_lcd_panel_io_handle_t io, const esp_lcd_touch_config_t *config, esp_lcd_touch_handle_t *out_touch)
-{
+esp_err_t esp_lcd_touch_new_i2c_ft6x36(const esp_lcd_panel_io_handle_t io, const esp_lcd_touch_config_t *config,
+                                       esp_lcd_touch_handle_t *out_touch) {
     esp_err_t ret = ESP_OK;
 
     assert(config != NULL);
@@ -91,8 +92,7 @@ esp_err_t esp_lcd_touch_new_i2c_ft6x36(const esp_lcd_panel_io_handle_t io, const
     memcpy(&esp_lcd_touch_ft6x36->config, config, sizeof(esp_lcd_touch_config_t));
 
     /* Prepare pin for touch interrupt */
-    if (esp_lcd_touch_ft6x36->config.int_gpio_num != GPIO_NUM_NC)
-    {
+    if (esp_lcd_touch_ft6x36->config.int_gpio_num != GPIO_NUM_NC) {
         const gpio_config_t int_gpio_config = {
             .mode = GPIO_MODE_INPUT,
             .intr_type = (esp_lcd_touch_ft6x36->config.levels.interrupt ? GPIO_INTR_POSEDGE : GPIO_INTR_NEGEDGE),
@@ -101,18 +101,16 @@ esp_err_t esp_lcd_touch_new_i2c_ft6x36(const esp_lcd_panel_io_handle_t io, const
         ESP_GOTO_ON_ERROR(ret, err, TAG, "GPIO config failed");
 
         /* Register interrupt callback */
-        if (esp_lcd_touch_ft6x36->config.interrupt_callback)
-        {
-            esp_lcd_touch_register_interrupt_callback(esp_lcd_touch_ft6x36, esp_lcd_touch_ft6x36->config.interrupt_callback);
+        if (esp_lcd_touch_ft6x36->config.interrupt_callback) {
+            esp_lcd_touch_register_interrupt_callback(esp_lcd_touch_ft6x36,
+                                                      esp_lcd_touch_ft6x36->config.interrupt_callback);
         }
     }
 
     /* Prepare pin for touch controller reset */
-    if (esp_lcd_touch_ft6x36->config.rst_gpio_num != GPIO_NUM_NC)
-    {
-        const gpio_config_t rst_gpio_config = {
-            .mode = GPIO_MODE_OUTPUT,
-            .pin_bit_mask = BIT64(esp_lcd_touch_ft6x36->config.rst_gpio_num)};
+    if (esp_lcd_touch_ft6x36->config.rst_gpio_num != GPIO_NUM_NC) {
+        const gpio_config_t rst_gpio_config = {.mode = GPIO_MODE_OUTPUT,
+                                               .pin_bit_mask = BIT64(esp_lcd_touch_ft6x36->config.rst_gpio_num)};
         ret = gpio_config(&rst_gpio_config);
         ESP_GOTO_ON_ERROR(ret, err, TAG, "GPIO config failed");
     }
@@ -128,11 +126,9 @@ esp_err_t esp_lcd_touch_new_i2c_ft6x36(const esp_lcd_panel_io_handle_t io, const
     *out_touch = esp_lcd_touch_ft6x36;
 
 err:
-    if (ret != ESP_OK)
-    {
+    if (ret != ESP_OK) {
         ESP_LOGE(TAG, "Error (0x%x)! Touch controller FT6x36 initialization failed!", ret);
-        if (esp_lcd_touch_ft6x36)
-        {
+        if (esp_lcd_touch_ft6x36) {
             esp_lcd_touch_ft6x36_del(esp_lcd_touch_ft6x36);
         }
     }
@@ -140,8 +136,7 @@ err:
     return ret;
 }
 
-static esp_err_t esp_lcd_touch_ft6x36_read_data(esp_lcd_touch_handle_t tp)
-{
+static esp_err_t esp_lcd_touch_ft6x36_read_data(esp_lcd_touch_handle_t tp) {
     esp_err_t err;
     uint8_t data[16];
     uint8_t points, touches;
@@ -153,8 +148,7 @@ static esp_err_t esp_lcd_touch_ft6x36_read_data(esp_lcd_touch_handle_t tp)
     err = touch_ft6x36_i2c_read(tp, FT62XX_REG_NUMTOUCHES, &points, 1);
     ESP_RETURN_ON_ERROR(err, TAG, "I2C read error!");
 
-    if (points > 2 || points == 0)
-    {
+    if (points > 2 || points == 0) {
         return ESP_OK;
     }
 
@@ -168,8 +162,7 @@ static esp_err_t esp_lcd_touch_ft6x36_read_data(esp_lcd_touch_handle_t tp)
     touches = data[0x02];
 
     /* Check if the number of touched points is correct */
-    if (points != touches)
-    {
+    if (points != touches) {
         return ESP_OK;
     }
 
@@ -179,8 +172,7 @@ static esp_err_t esp_lcd_touch_ft6x36_read_data(esp_lcd_touch_handle_t tp)
     tp->data.points = points;
 
     /* Fill all coordinates */
-    for (i = 0; i < points; i++)
-    {
+    for (i = 0; i < points; i++) {
         tp->data.coords[i].x = ((data[0x03 + i * 6] & 0x0F) << 8) | data[0x04 + i * 6];
         tp->data.coords[i].y = ((data[0x05 + i * 6] & 0x0F) << 8) | data[0x06 + i * 6];
     }
@@ -190,8 +182,8 @@ static esp_err_t esp_lcd_touch_ft6x36_read_data(esp_lcd_touch_handle_t tp)
     return ESP_OK;
 }
 
-static bool esp_lcd_touch_ft6x36_get_xy(esp_lcd_touch_handle_t tp, uint16_t *x, uint16_t *y, uint16_t *strength, uint8_t *point_num, uint8_t max_point_num)
-{
+static bool esp_lcd_touch_ft6x36_get_xy(esp_lcd_touch_handle_t tp, uint16_t *x, uint16_t *y, uint16_t *strength,
+                                        uint8_t *point_num, uint8_t max_point_num) {
     assert(tp != NULL);
     assert(x != NULL);
     assert(y != NULL);
@@ -203,13 +195,11 @@ static bool esp_lcd_touch_ft6x36_get_xy(esp_lcd_touch_handle_t tp, uint16_t *x, 
     /* Count of points */
     *point_num = (tp->data.points > max_point_num ? max_point_num : tp->data.points);
 
-    for (size_t i = 0; i < *point_num; i++)
-    {
+    for (size_t i = 0; i < *point_num; i++) {
         x[i] = tp->data.coords[i].x;
         y[i] = tp->data.coords[i].y;
 
-        if (strength)
-        {
+        if (strength) {
             strength[i] = tp->data.coords[i].strength;
         }
     }
@@ -222,23 +212,19 @@ static bool esp_lcd_touch_ft6x36_get_xy(esp_lcd_touch_handle_t tp, uint16_t *x, 
     return (*point_num > 0);
 }
 
-static esp_err_t esp_lcd_touch_ft6x36_del(esp_lcd_touch_handle_t tp)
-{
+static esp_err_t esp_lcd_touch_ft6x36_del(esp_lcd_touch_handle_t tp) {
     assert(tp != NULL);
 
     /* Reset GPIO pin settings */
-    if (tp->config.int_gpio_num != GPIO_NUM_NC)
-    {
+    if (tp->config.int_gpio_num != GPIO_NUM_NC) {
         gpio_reset_pin(tp->config.int_gpio_num);
-        if (tp->config.interrupt_callback)
-        {
+        if (tp->config.interrupt_callback) {
             gpio_isr_handler_remove(tp->config.int_gpio_num);
         }
     }
 
     /* Reset GPIO pin settings */
-    if (tp->config.rst_gpio_num != GPIO_NUM_NC)
-    {
+    if (tp->config.rst_gpio_num != GPIO_NUM_NC) {
         gpio_reset_pin(tp->config.rst_gpio_num);
     }
 
@@ -251,8 +237,7 @@ static esp_err_t esp_lcd_touch_ft6x36_del(esp_lcd_touch_handle_t tp)
  * Private API function
  *******************************************************************************/
 
-static esp_err_t touch_ft6x36_init(esp_lcd_touch_handle_t tp)
-{
+static esp_err_t touch_ft6x36_init(esp_lcd_touch_handle_t tp) {
     esp_err_t ret = ESP_OK;
     uint8_t vend_id, chip_id, firm_vers, point_rate, thresh, reg_val;
 
@@ -265,7 +250,8 @@ static esp_err_t touch_ft6x36_init(esp_lcd_touch_handle_t tp)
     ESP_RETURN_ON_ERROR(touch_ft6x36_i2c_read(tp, FT62XX_REG_CHIPID, &chip_id, 1), TAG, "Read chip ID error");
 
     /* Read firmware version */
-    ESP_RETURN_ON_ERROR(touch_ft6x36_i2c_read(tp, FT62XX_REG_FIRMVERS, &firm_vers, 1), TAG, "Read firmware version error");
+    ESP_RETURN_ON_ERROR(touch_ft6x36_i2c_read(tp, FT62XX_REG_FIRMVERS, &firm_vers, 1), TAG,
+                        "Read firmware version error");
 
     /* Read point rate */
     ESP_RETURN_ON_ERROR(touch_ft6x36_i2c_read(tp, FT62XX_REG_POINTRATE, &point_rate, 1), TAG, "Read point rate error");
@@ -282,29 +268,24 @@ static esp_err_t touch_ft6x36_init(esp_lcd_touch_handle_t tp)
 
     /* Dump all registers */
     ESP_LOGI(TAG, "Dumping all registers:");
-    for (int16_t i = 0; i < 0x10; i++)
-    {
+    for (int16_t i = 0; i < 0x10; i++) {
         /* Read register */
-        if (touch_ft6x36_i2c_read(tp, i, &reg_val, 1) == ESP_OK)
-        {
+        if (touch_ft6x36_i2c_read(tp, i, &reg_val, 1) == ESP_OK) {
             ESP_LOGI(TAG, "I2C $%02X = 0x%02X", i, reg_val);
-        }
-        else
-        {
+        } else {
             ESP_LOGE(TAG, "Failed to read register 0x%02X", i);
         }
     }
 
     /* Check if the values are valid */
-    if (vend_id != FT62XX_VENDID)
-    {
+    if (vend_id != FT62XX_VENDID) {
         ESP_LOGE(TAG, "Invalid vendor ID: 0x%02X", vend_id);
         return ESP_FAIL;
     }
 
     /* Check if the chip ID is supported */
-    if (chip_id != FT6206_CHIPID && chip_id != FT6236_CHIPID && chip_id != FT6236U_CHIPID && chip_id != FT6336U_CHIPID && chip_id != FT3236_CHIPID)
-    {
+    if (chip_id != FT6206_CHIPID && chip_id != FT6236_CHIPID && chip_id != FT6236U_CHIPID &&
+        chip_id != FT6336U_CHIPID && chip_id != FT3236_CHIPID) {
         ESP_LOGE(TAG, "Unsupported chip ID: 0x%02X", chip_id);
         return ESP_FAIL;
     }
@@ -316,30 +297,28 @@ static esp_err_t touch_ft6x36_init(esp_lcd_touch_handle_t tp)
     ret |= touch_ft6x36_i2c_write(tp, FT62XX_REG_THRESHHOLD, FT62XX_DEFAULT_THRESHOLD);
 
     /* Set point rate */
-    // we keep it at a high rate for now
-    ret |= touch_ft6x36_i2c_write(tp, FT62XX_REG_POINTRATE, 0x0A);
+    ret |= touch_ft6x36_i2c_write(tp, FT62XX_REG_POINTRATE, 0x0E); // 0x0E = 14ms, ~70Hz
 
     return ret;
 }
 
 /* Reset controller */
-static esp_err_t touch_ft6x36_reset(esp_lcd_touch_handle_t tp)
-{
+static esp_err_t touch_ft6x36_reset(esp_lcd_touch_handle_t tp) {
     assert(tp != NULL);
 
-    if (tp->config.rst_gpio_num != GPIO_NUM_NC)
-    {
-        ESP_RETURN_ON_ERROR(gpio_set_level(tp->config.rst_gpio_num, tp->config.levels.reset), TAG, "GPIO set level error!");
+    if (tp->config.rst_gpio_num != GPIO_NUM_NC) {
+        ESP_RETURN_ON_ERROR(gpio_set_level(tp->config.rst_gpio_num, tp->config.levels.reset), TAG,
+                            "GPIO set level error!");
         vTaskDelay(pdMS_TO_TICKS(10));
-        ESP_RETURN_ON_ERROR(gpio_set_level(tp->config.rst_gpio_num, !tp->config.levels.reset), TAG, "GPIO set level error!");
+        ESP_RETURN_ON_ERROR(gpio_set_level(tp->config.rst_gpio_num, !tp->config.levels.reset), TAG,
+                            "GPIO set level error!");
         vTaskDelay(pdMS_TO_TICKS(10));
     }
 
     return ESP_OK;
 }
 
-static esp_err_t touch_ft6x36_i2c_write(esp_lcd_touch_handle_t tp, uint8_t reg, uint8_t data)
-{
+static esp_err_t touch_ft6x36_i2c_write(esp_lcd_touch_handle_t tp, uint8_t reg, uint8_t data) {
     assert(tp != NULL);
 
     // *INDENT-OFF*
@@ -348,8 +327,7 @@ static esp_err_t touch_ft6x36_i2c_write(esp_lcd_touch_handle_t tp, uint8_t reg, 
     // *INDENT-ON*
 }
 
-static esp_err_t touch_ft6x36_i2c_read(esp_lcd_touch_handle_t tp, uint8_t reg, uint8_t *data, uint8_t len)
-{
+static esp_err_t touch_ft6x36_i2c_read(esp_lcd_touch_handle_t tp, uint8_t reg, uint8_t *data, uint8_t len) {
     assert(tp != NULL);
     assert(data != NULL);
 

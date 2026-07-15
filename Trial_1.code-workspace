@@ -4,5 +4,12 @@
 			"path": "."
 		}
 	],
-	"settings": {}
+	"settings": {
+		"chat.tools.terminal.autoApprove": {
+			"/^lsusb 2>&1 \\|\\| echo \"lsusb not available\"; ls /dev/ttyUSB\\* /dev/ttyACM\\* 2>&1; ls /dev/bus/usb 2>&1 \\| head -20$/": {
+				"approve": true,
+				"matchCommandLine": true
+			}
+		}
+	}
 }

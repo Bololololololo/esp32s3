@@ -60,6 +60,31 @@ static i2c_master_bus_handle_t i2c_handle = NULL;
 static esp_lcd_panel_io_handle_t tp_io_handle= NULL;
 static esp_lcd_touch_handle_t touch_handle = NULL;
 
+
+static void screen_touch_event_cb(lv_event_t * e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+
+    if (code == LV_EVENT_PRESSED || code == LV_EVENT_PRESSING || code == LV_EVENT_RELEASED) {
+        ESP_LOGE(TAG, "Screen touch event callback triggered: %d", (int)code);
+        ESP_LOGE(TAG, "Screen is being pressed");
+        lv_indev_t * indev = (lv_indev_t *)lv_event_get_target(e);
+        if (indev) {
+            lv_point_t point;
+            lv_indev_get_point(indev, &point);
+            
+            ESP_LOGE(TAG, "Screen Pressed at: X=%d, Y=%d", (int)point.x, (int)point.y);
+        }
+    }
+}
+
+void setup_global_touch_listener(lv_indev_t * indev)
+{
+    ESP_LOGE(TAG, "Setting up global touch listener");
+    // Add event callback to catch drag/touch coordinates globally from the indev
+    lv_indev_add_event_cb(indev, screen_touch_event_cb, LV_EVENT_ALL, NULL);
+}
+
 static esp_err_t app_lvgl_init(int task_affinity)
 {
     /* Initialize LVGL */
@@ -102,11 +127,6 @@ static esp_err_t app_lvgl_init(int task_affinity)
     return ESP_OK;
 }
 
-static void _app_button_cb(lv_event_t *e)
-{
-    ESP_LOGI(TAG, "Button clicked, rotating screen");
-}
-
 static void app_main_display(void)
 {
     lv_obj_t *scr = lv_scr_act();
@@ -114,7 +134,10 @@ static void app_main_display(void)
     /* Task lock */
     lvgl_port_lock(0);
 
-    examples_init("/lvgl_ui_editor/");
+    examples_init("");
+    alarm_create(scr);
+
+    setup_global_touch_listener(lvgl_touch_indev);
 
     /* Task unlock */
     lvgl_port_unlock();
@@ -199,7 +222,7 @@ void Gui::initTouch(void)
         .flags = {
             .swap_xy = 1,
             .mirror_x = 0,
-            .mirror_y = 0,
+            .mirror_y = 1,
         },
     };
     esp_lcd_panel_io_i2c_config_t tp_io_config = ESP_LCD_TOUCH_IO_I2C_FT6x36_CONFIG();

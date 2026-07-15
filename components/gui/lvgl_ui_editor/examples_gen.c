@@ -44,16 +44,28 @@
  *----------------*/
 
 lv_font_t * geist_semibold_12;
+extern uint8_t Geist_SemiBold_ttf_data[];
+extern size_t Geist_SemiBold_ttf_data_size;
 lv_font_t * geist_semibold_14;
 lv_font_t * geist_bold_16;
 lv_font_t * geist_semibold_20;
 lv_font_t * geist_semibold_28;
 lv_font_t * geist_regular_12;
+extern uint8_t Geist_Regular_ttf_data[];
+extern size_t Geist_Regular_ttf_data_size;
 lv_font_t * geist_regular_14;
 lv_font_t * geist_light_60;
+extern uint8_t Geist_Light_ttf_data[];
+extern size_t Geist_Light_ttf_data_size;
 lv_font_t * literata_80;
+extern uint8_t Literata_Bold_ttf_data[];
+extern size_t Literata_Bold_ttf_data_size;
 lv_font_t * abril_fatface_80;
+extern uint8_t AbrilFatface_Regular_ttf_data[];
+extern size_t AbrilFatface_Regular_ttf_data_size;
 lv_font_t * big_shoulders_80;
+extern uint8_t BigShoulders_Bold_ttf_data[];
+extern size_t BigShoulders_Bold_ttf_data_size;
 
 /*----------------
  * Images
@@ -125,80 +137,69 @@ void examples_init_gen(const char * asset_path)
      * Fonts
      *----------------*/
 
-    /* create tiny ttf font "geist_semibold_12" from file */
-    lv_snprintf(buf, 256, "%s%s", asset_path, "fonts/Geist/Geist-SemiBold.ttf");
-    geist_semibold_12 = lv_tiny_ttf_create_file(buf, 12);
-    /* create tiny ttf font "geist_semibold_14" from file */
-    lv_snprintf(buf, 256, "%s%s", asset_path, "fonts/Geist/Geist-SemiBold.ttf");
-    geist_semibold_14 = lv_tiny_ttf_create_file(buf, 14);
-    /* create tiny ttf font "geist_bold_16" from file */
-    lv_snprintf(buf, 256, "%s%s", asset_path, "fonts/Geist/Geist-SemiBold.ttf");
-    geist_bold_16 = lv_tiny_ttf_create_file(buf, 16);
-    /* create tiny ttf font "geist_semibold_20" from file */
-    lv_snprintf(buf, 256, "%s%s", asset_path, "fonts/Geist/Geist-SemiBold.ttf");
-    geist_semibold_20 = lv_tiny_ttf_create_file(buf, 20);
-    /* create tiny ttf font "geist_semibold_28" from file */
-    lv_snprintf(buf, 256, "%s%s", asset_path, "fonts/Geist/Geist-SemiBold.ttf");
-    geist_semibold_28 = lv_tiny_ttf_create_file(buf, 28);
-    /* create tiny ttf font "geist_regular_12" from file */
-    lv_snprintf(buf, 256, "%s%s", asset_path, "fonts/Geist/Geist-Regular.ttf");
-    geist_regular_12 = lv_tiny_ttf_create_file(buf, 12);
-    /* create tiny ttf font "geist_regular_14" from file */
-    lv_snprintf(buf, 256, "%s%s", asset_path, "fonts/Geist/Geist-Regular.ttf");
-    geist_regular_14 = lv_tiny_ttf_create_file(buf, 14);
-    /* create tiny ttf font "geist_light_60" from file */
-    lv_snprintf(buf, 256, "%s%s", asset_path, "fonts/Geist/Geist-Light.ttf");
-    geist_light_60 = lv_tiny_ttf_create_file(buf, 60);
-    /* create tiny ttf font "literata_80" from file */
-    lv_snprintf(buf, 256, "%s%s", asset_path, "fonts/Literata/Literata-Bold.ttf");
-    literata_80 = lv_tiny_ttf_create_file(buf, 80);
-    /* create tiny ttf font "abril_fatface_80" from file */
-    lv_snprintf(buf, 256, "%s%s", asset_path, "fonts/AbrilFatface/AbrilFatface-Regular.ttf");
-    abril_fatface_80 = lv_tiny_ttf_create_file(buf, 80);
-    /* create tiny ttf font "big_shoulders_80" from file */
-    lv_snprintf(buf, 256, "%s%s", asset_path, "fonts/BigShoulders/BigShoulders-Bold.ttf");
-    big_shoulders_80 = lv_tiny_ttf_create_file(buf, 80);
+    /* create tiny ttf font 'geist_semibold_12' from C array */
+    geist_semibold_12 = lv_tiny_ttf_create_data(Geist_SemiBold_ttf_data, Geist_SemiBold_ttf_data_size, 12);
+    /* create tiny ttf font 'geist_semibold_14' from C array */
+    geist_semibold_14 = lv_tiny_ttf_create_data(Geist_SemiBold_ttf_data, Geist_SemiBold_ttf_data_size, 14);
+    /* create tiny ttf font 'geist_bold_16' from C array */
+    geist_bold_16 = lv_tiny_ttf_create_data(Geist_SemiBold_ttf_data, Geist_SemiBold_ttf_data_size, 16);
+    /* create tiny ttf font 'geist_semibold_20' from C array */
+    geist_semibold_20 = lv_tiny_ttf_create_data(Geist_SemiBold_ttf_data, Geist_SemiBold_ttf_data_size, 20);
+    /* create tiny ttf font 'geist_semibold_28' from C array */
+    geist_semibold_28 = lv_tiny_ttf_create_data(Geist_SemiBold_ttf_data, Geist_SemiBold_ttf_data_size, 28);
+    /* create tiny ttf font 'geist_regular_12' from C array */
+    geist_regular_12 = lv_tiny_ttf_create_data(Geist_Regular_ttf_data, Geist_Regular_ttf_data_size, 12);
+    /* create tiny ttf font 'geist_regular_14' from C array */
+    geist_regular_14 = lv_tiny_ttf_create_data(Geist_Regular_ttf_data, Geist_Regular_ttf_data_size, 14);
+    /* create tiny ttf font 'geist_light_60' from C array */
+    geist_light_60 = lv_tiny_ttf_create_data(Geist_Light_ttf_data, Geist_Light_ttf_data_size, 60);
+    /* create tiny ttf font 'literata_80' from C array */
+    literata_80 = lv_tiny_ttf_create_data(Literata_Bold_ttf_data, Literata_Bold_ttf_data_size, 80);
+    /* create tiny ttf font 'abril_fatface_80' from C array */
+    abril_fatface_80 = lv_tiny_ttf_create_data(AbrilFatface_Regular_ttf_data, AbrilFatface_Regular_ttf_data_size, 80);
+    /* create tiny ttf font 'big_shoulders_80' from C array */
+    big_shoulders_80 = lv_tiny_ttf_create_data(BigShoulders_Bold_ttf_data, BigShoulders_Bold_ttf_data_size, 80);
 
 
     /*----------------
      * Images
      *----------------*/
-    lv_snprintf(buf, 256, "%s%s", asset_path, "images/icon_plus.png");
-    icon_plus = lv_strdup(buf);
-    lv_snprintf(buf, 256, "%s%s", asset_path, "images/icon_minus.png");
-    icon_minus = lv_strdup(buf);
-    lv_snprintf(buf, 256, "%s%s", asset_path, "images/light_temp_arc_bg.png");
-    light_temp_arc_bg = lv_strdup(buf);
-    lv_snprintf(buf, 256, "%s%s", asset_path, "images/icon_heart.png");
-    icon_heart = lv_strdup(buf);
-    lv_snprintf(buf, 256, "%s%s", asset_path, "images/icon_play.png");
-    icon_play = lv_strdup(buf);
-    lv_snprintf(buf, 256, "%s%s", asset_path, "images/icon_pause.png");
-    icon_pause = lv_strdup(buf);
-    lv_snprintf(buf, 256, "%s%s", asset_path, "images/icon_skip_back.png");
-    icon_skip_back = lv_strdup(buf);
-    lv_snprintf(buf, 256, "%s%s", asset_path, "images/icon_skip_forward.png");
-    icon_skip_forward = lv_strdup(buf);
-    lv_snprintf(buf, 256, "%s%s", asset_path, "images/icon_volume_max.png");
-    icon_volume_max = lv_strdup(buf);
-    lv_snprintf(buf, 256, "%s%s", asset_path, "images/icon_volume_min.png");
-    icon_volume_min = lv_strdup(buf);
-    lv_snprintf(buf, 256, "%s%s", asset_path, "images/icon_volume_none.png");
-    icon_volume_none = lv_strdup(buf);
-    lv_snprintf(buf, 256, "%s%s", asset_path, "images/song_cover_1.png");
-    song_cover_1 = lv_strdup(buf);
-    lv_snprintf(buf, 256, "%s%s", asset_path, "images/weather_location_1_bg.png");
-    weather_location_1_bg = lv_strdup(buf);
-    lv_snprintf(buf, 256, "%s%s", asset_path, "images/weather_location_2_bg.png");
-    weather_location_2_bg = lv_strdup(buf);
-    lv_snprintf(buf, 256, "%s%s", asset_path, "images/icon_cloudy.png");
-    icon_cloudy = lv_strdup(buf);
-    lv_snprintf(buf, 256, "%s%s", asset_path, "images/icon_sunny.png");
-    icon_sunny = lv_strdup(buf);
-    lv_snprintf(buf, 256, "%s%s", asset_path, "images/icon_pin.png");
-    icon_pin = lv_strdup(buf);
-    lv_snprintf(buf, 256, "%s%s", asset_path, "images/icon_theme.png");
-    icon_theme = lv_strdup(buf);
+    // lv_snprintf(buf, 256, "%s%s", asset_path, "images/icon_plus.png");
+    // icon_plus = lv_strdup(buf);
+    // lv_snprintf(buf, 256, "%s%s", asset_path, "images/icon_minus.png");
+    // icon_minus = lv_strdup(buf);
+    // lv_snprintf(buf, 256, "%s%s", asset_path, "images/light_temp_arc_bg.png");
+    // light_temp_arc_bg = lv_strdup(buf);
+    // lv_snprintf(buf, 256, "%s%s", asset_path, "images/icon_heart.png");
+    // icon_heart = lv_strdup(buf);
+    // lv_snprintf(buf, 256, "%s%s", asset_path, "images/icon_play.png");
+    // icon_play = lv_strdup(buf);
+    // lv_snprintf(buf, 256, "%s%s", asset_path, "images/icon_pause.png");
+    // icon_pause = lv_strdup(buf);
+    // lv_snprintf(buf, 256, "%s%s", asset_path, "images/icon_skip_back.png");
+    // icon_skip_back = lv_strdup(buf);
+    // lv_snprintf(buf, 256, "%s%s", asset_path, "images/icon_skip_forward.png");
+    // icon_skip_forward = lv_strdup(buf);
+    // lv_snprintf(buf, 256, "%s%s", asset_path, "images/icon_volume_max.png");
+    // icon_volume_max = lv_strdup(buf);
+    // lv_snprintf(buf, 256, "%s%s", asset_path, "images/icon_volume_min.png");
+    // icon_volume_min = lv_strdup(buf);
+    // lv_snprintf(buf, 256, "%s%s", asset_path, "images/icon_volume_none.png");
+    // icon_volume_none = lv_strdup(buf);
+    // lv_snprintf(buf, 256, "%s%s", asset_path, "images/song_cover_1.png");
+    // song_cover_1 = lv_strdup(buf);
+    // lv_snprintf(buf, 256, "%s%s", asset_path, "images/weather_location_1_bg.png");
+    // weather_location_1_bg = lv_strdup(buf);
+    // lv_snprintf(buf, 256, "%s%s", asset_path, "images/weather_location_2_bg.png");
+    // weather_location_2_bg = lv_strdup(buf);
+    // lv_snprintf(buf, 256, "%s%s", asset_path, "images/icon_cloudy.png");
+    // icon_cloudy = lv_strdup(buf);
+    // lv_snprintf(buf, 256, "%s%s", asset_path, "images/icon_sunny.png");
+    // icon_sunny = lv_strdup(buf);
+    // lv_snprintf(buf, 256, "%s%s", asset_path, "images/icon_pin.png");
+    // icon_pin = lv_strdup(buf);
+    // lv_snprintf(buf, 256, "%s%s", asset_path, "images/icon_theme.png");
+    // icon_theme = lv_strdup(buf);
 
     /*----------------
      * Global styles

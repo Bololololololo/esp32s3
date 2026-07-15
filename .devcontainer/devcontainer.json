@@ -17,5 +17,8 @@
 			]
 		}
 	},
-	"runArgs": ["--privileged"]
+	"runArgs": [
+		"--privileged"
+	],
+	"postStartCommand": "bash .devcontainer/fix-usb-jtag.sh || true"
 }

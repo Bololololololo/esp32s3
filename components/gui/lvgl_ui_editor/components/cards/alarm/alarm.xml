@@ -1,6 +1,6 @@
 <component>
 	<previews>
-		<preview width="320" height="400" style_bg_color="0x888" />
+		<preview width="320" height="240" style_bg_color="0x888" />
 	</previews>
 	<consts>
 		<string

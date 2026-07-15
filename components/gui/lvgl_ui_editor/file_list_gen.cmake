@@ -27,4 +27,15 @@ list(
   ${CMAKE_CURRENT_LIST_DIR}/components/cards/weather/weather_gen.c
   ${CMAKE_CURRENT_LIST_DIR}/examples_gen.c
   ${CMAKE_CURRENT_LIST_DIR}/examples.c
+  ${CMAKE_CURRENT_LIST_DIR}/fonts/AbrilFatface_Regular_ttf_data.c
+  ${CMAKE_CURRENT_LIST_DIR}/fonts/BigShoulders_Bold_ttf_data.c
+  ${CMAKE_CURRENT_LIST_DIR}/fonts/Geist_Light_ttf_data.c
+  ${CMAKE_CURRENT_LIST_DIR}/fonts/Geist_Regular_ttf_data.c
+  ${CMAKE_CURRENT_LIST_DIR}/fonts/Geist_Regular_ttf_data.c
+  ${CMAKE_CURRENT_LIST_DIR}/fonts/Geist_SemiBold_ttf_data.c
+  ${CMAKE_CURRENT_LIST_DIR}/fonts/Geist_SemiBold_ttf_data.c
+  ${CMAKE_CURRENT_LIST_DIR}/fonts/Geist_SemiBold_ttf_data.c
+  ${CMAKE_CURRENT_LIST_DIR}/fonts/Geist_SemiBold_ttf_data.c
+  ${CMAKE_CURRENT_LIST_DIR}/fonts/Geist_SemiBold_ttf_data.c
+  ${CMAKE_CURRENT_LIST_DIR}/fonts/Literata_Bold_ttf_data.c
   ${CMAKE_CURRENT_LIST_DIR}/screens/elements_gen.c)

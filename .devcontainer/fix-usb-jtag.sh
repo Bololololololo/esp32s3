@@ -8,17 +8,17 @@ set -euo pipefail
 VENDOR="303a"
 PRODUCT="1001"
 
-# Find the bus and devnum from sysfs
-SYSFS_PATH=$(grep -rl "idVendor" /sys/bus/usb/devices/ 2>/dev/null | \
-  while read f; do
-    dir=$(dirname "$f")
-    vid=$(cat "$dir/idVendor" 2>/dev/null)
-    pid=$(cat "$dir/idProduct" 2>/dev/null)
-    if [[ "$vid" == "$VENDOR" && "$pid" == "$PRODUCT" ]]; then
-      echo "$dir"
-      break
-    fi
-  done)
+# Find the bus and devnum from sysfs (use glob, not find — sysfs breaks find)
+SYSFS_PATH=""
+for f in /sys/bus/usb/devices/*/idVendor; do
+  dir=$(dirname "$f")
+  vid=$(cat "$dir/idVendor" 2>/dev/null)
+  pid=$(cat "$dir/idProduct" 2>/dev/null)
+  if [[ "$vid" == "$VENDOR" && "$pid" == "$PRODUCT" ]]; then
+    SYSFS_PATH="$dir"
+    break
+  fi
+done
 
 if [[ -z "$SYSFS_PATH" ]]; then
   echo "ERROR: ESP32-S3 USB JTAG device (${VENDOR}:${PRODUCT}) not found. Is the board plugged in?"
@@ -42,3 +42,6 @@ fi
 
 chmod 666 "$NODE"
 echo "Done. OpenOCD should now be able to open the device."
+
+
+
