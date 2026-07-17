@@ -90,6 +90,7 @@ static esp_err_t app_lvgl_init(int task_affinity)
     /* Initialize LVGL */
     lvgl_port_cfg_t lvgl_cfg = ESP_LVGL_PORT_INIT_CONFIG();
     lvgl_cfg.task_affinity = task_affinity;
+    lvgl_cfg.task_max_sleep_ms = 10;
     lvgl_port_init(&lvgl_cfg);
 
     /* Add LCD screen */
@@ -137,7 +138,7 @@ static void app_main_display(void)
     examples_init("");
     alarm_create(scr);
 
-    setup_global_touch_listener(lvgl_touch_indev);
+    //setup_global_touch_listener(lvgl_touch_indev);
 
     /* Task unlock */
     lvgl_port_unlock();
@@ -211,8 +212,8 @@ void Gui::initTouch(void)
 
     /* Initialize touch HW */
     const esp_lcd_touch_config_t tp_cfg = {
-        .x_max = LCD_H_RES,
-        .y_max = LCD_V_RES,
+        .x_max = LCD_V_RES,
+        .y_max = LCD_H_RES,
         .rst_gpio_num = GPIO_NUM_NC, // Shared with LCD reset
         .int_gpio_num = TOUCH_GPIO_INT,
         .levels = {
@@ -237,7 +238,7 @@ void Gui::init() {
     initDisplay();
     initTouch();
     
-    ESP_ERROR_CHECK(app_lvgl_init(-1)); // Initialize LVGL with no task affinity, allowing it to run on any core
+    ESP_ERROR_CHECK(app_lvgl_init(1)); // Initialize LVGL with no task affinity, allowing it to run on any core
     
     app_main_display();
 }

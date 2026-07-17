@@ -43,7 +43,7 @@ static const char *TAG = "FT6x36";
 #define FT6236U_CHIPID 0x64 // Chip selecting
 #define FT6336U_CHIPID 0x64 // Chip selecting
 
-#define FT62XX_DEFAULT_THRESHOLD 128 // Default threshold for touch detection
+#define FT62XX_DEFAULT_THRESHOLD 32 // Default threshold for touch detection
 
 /*******************************************************************************
  * Function definitions
@@ -297,8 +297,7 @@ static esp_err_t touch_ft6x36_init(esp_lcd_touch_handle_t tp) {
     ret |= touch_ft6x36_i2c_write(tp, FT62XX_REG_THRESHHOLD, FT62XX_DEFAULT_THRESHOLD);
 
     /* Set point rate */
-    ret |= touch_ft6x36_i2c_write(tp, FT62XX_REG_POINTRATE, 0x0E); // 0x0E = 14ms, ~70Hz
-
+    ret |= touch_ft6x36_i2c_write(tp, FT62XX_REG_POINTRATE, 0x0C); // 100ms
     return ret;
 }
 
