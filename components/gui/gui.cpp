@@ -24,6 +24,7 @@
 #include "esp_lcd_touch_ft6x36.h"
 
 #include "lvgl_ui_editor/examples.h"
+#include "lvgl_ui_editor/components/robot/robot.h"
 
 static const char *TAG = "gui";
 
@@ -111,6 +112,7 @@ static esp_err_t app_lvgl_init(int task_affinity)
         },
         .flags = {
             .buff_dma = true,
+            .buff_spiram = true,
 #if LVGL_VERSION_MAJOR >= 9
             .swap_bytes = true,
 #endif
@@ -130,13 +132,18 @@ static esp_err_t app_lvgl_init(int task_affinity)
 
 static void app_main_display(void)
 {
-    lv_obj_t *scr = lv_scr_act();
-
     /* Task lock */
     lvgl_port_lock(0);
 
     examples_init("");
-    alarm_create(scr);
+    lv_subject_t message;
+    char msg_buf[32];
+    char prev_msg_buf[32];
+    // lv_obj_t *scr = screen1_create();
+
+    // lv_screen_load(scr);
+
+        create_robot_face_ui();
 
     //setup_global_touch_listener(lvgl_touch_indev);
 

@@ -1,0 +1,12 @@
+<screen>
+	<view extends="lv_obj">
+		<roller
+			name="roller_1"
+			subject_enable="room_temp"
+			width="320"
+			height="240"
+			options="home&#10;settings&#10;info"
+			options-mode="infinite"
+		/>
+	</view>
+</screen>

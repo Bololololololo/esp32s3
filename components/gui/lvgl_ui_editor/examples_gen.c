@@ -164,42 +164,42 @@ void examples_init_gen(const char * asset_path)
     /*----------------
      * Images
      *----------------*/
-    // lv_snprintf(buf, 256, "%s%s", asset_path, "images/icon_plus.png");
-    // icon_plus = lv_strdup(buf);
-    // lv_snprintf(buf, 256, "%s%s", asset_path, "images/icon_minus.png");
-    // icon_minus = lv_strdup(buf);
-    // lv_snprintf(buf, 256, "%s%s", asset_path, "images/light_temp_arc_bg.png");
-    // light_temp_arc_bg = lv_strdup(buf);
-    // lv_snprintf(buf, 256, "%s%s", asset_path, "images/icon_heart.png");
-    // icon_heart = lv_strdup(buf);
-    // lv_snprintf(buf, 256, "%s%s", asset_path, "images/icon_play.png");
-    // icon_play = lv_strdup(buf);
-    // lv_snprintf(buf, 256, "%s%s", asset_path, "images/icon_pause.png");
-    // icon_pause = lv_strdup(buf);
-    // lv_snprintf(buf, 256, "%s%s", asset_path, "images/icon_skip_back.png");
-    // icon_skip_back = lv_strdup(buf);
-    // lv_snprintf(buf, 256, "%s%s", asset_path, "images/icon_skip_forward.png");
-    // icon_skip_forward = lv_strdup(buf);
-    // lv_snprintf(buf, 256, "%s%s", asset_path, "images/icon_volume_max.png");
-    // icon_volume_max = lv_strdup(buf);
-    // lv_snprintf(buf, 256, "%s%s", asset_path, "images/icon_volume_min.png");
-    // icon_volume_min = lv_strdup(buf);
-    // lv_snprintf(buf, 256, "%s%s", asset_path, "images/icon_volume_none.png");
-    // icon_volume_none = lv_strdup(buf);
-    // lv_snprintf(buf, 256, "%s%s", asset_path, "images/song_cover_1.png");
-    // song_cover_1 = lv_strdup(buf);
-    // lv_snprintf(buf, 256, "%s%s", asset_path, "images/weather_location_1_bg.png");
-    // weather_location_1_bg = lv_strdup(buf);
-    // lv_snprintf(buf, 256, "%s%s", asset_path, "images/weather_location_2_bg.png");
-    // weather_location_2_bg = lv_strdup(buf);
-    // lv_snprintf(buf, 256, "%s%s", asset_path, "images/icon_cloudy.png");
-    // icon_cloudy = lv_strdup(buf);
-    // lv_snprintf(buf, 256, "%s%s", asset_path, "images/icon_sunny.png");
-    // icon_sunny = lv_strdup(buf);
-    // lv_snprintf(buf, 256, "%s%s", asset_path, "images/icon_pin.png");
-    // icon_pin = lv_strdup(buf);
-    // lv_snprintf(buf, 256, "%s%s", asset_path, "images/icon_theme.png");
-    // icon_theme = lv_strdup(buf);
+    lv_snprintf(buf, 256, "%s%s", asset_path, "images/icon_plus.png");
+    icon_plus = lv_strdup(buf);
+    lv_snprintf(buf, 256, "%s%s", asset_path, "images/icon_minus.png");
+    icon_minus = lv_strdup(buf);
+    lv_snprintf(buf, 256, "%s%s", asset_path, "images/light_temp_arc_bg.png");
+    light_temp_arc_bg = lv_strdup(buf);
+    lv_snprintf(buf, 256, "%s%s", asset_path, "images/icon_heart.png");
+    icon_heart = lv_strdup(buf);
+    lv_snprintf(buf, 256, "%s%s", asset_path, "images/icon_play.png");
+    icon_play = lv_strdup(buf);
+    lv_snprintf(buf, 256, "%s%s", asset_path, "images/icon_pause.png");
+    icon_pause = lv_strdup(buf);
+    lv_snprintf(buf, 256, "%s%s", asset_path, "images/icon_skip_back.png");
+    icon_skip_back = lv_strdup(buf);
+    lv_snprintf(buf, 256, "%s%s", asset_path, "images/icon_skip_forward.png");
+    icon_skip_forward = lv_strdup(buf);
+    lv_snprintf(buf, 256, "%s%s", asset_path, "images/icon_volume_max.png");
+    icon_volume_max = lv_strdup(buf);
+    lv_snprintf(buf, 256, "%s%s", asset_path, "images/icon_volume_min.png");
+    icon_volume_min = lv_strdup(buf);
+    lv_snprintf(buf, 256, "%s%s", asset_path, "images/icon_volume_none.png");
+    icon_volume_none = lv_strdup(buf);
+    lv_snprintf(buf, 256, "%s%s", asset_path, "images/song_cover_1.png");
+    song_cover_1 = lv_strdup(buf);
+    lv_snprintf(buf, 256, "%s%s", asset_path, "images/weather_location_1_bg.png");
+    weather_location_1_bg = lv_strdup(buf);
+    lv_snprintf(buf, 256, "%s%s", asset_path, "images/weather_location_2_bg.png");
+    weather_location_2_bg = lv_strdup(buf);
+    lv_snprintf(buf, 256, "%s%s", asset_path, "images/icon_cloudy.png");
+    icon_cloudy = lv_strdup(buf);
+    lv_snprintf(buf, 256, "%s%s", asset_path, "images/icon_sunny.png");
+    icon_sunny = lv_strdup(buf);
+    lv_snprintf(buf, 256, "%s%s", asset_path, "images/icon_pin.png");
+    icon_pin = lv_strdup(buf);
+    lv_snprintf(buf, 256, "%s%s", asset_path, "images/icon_theme.png");
+    icon_theme = lv_strdup(buf);
 
     /*----------------
      * Global styles

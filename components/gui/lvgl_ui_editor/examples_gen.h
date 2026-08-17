@@ -212,6 +212,7 @@ void examples_init_gen(const char * asset_path);
 #include "components/basic/slider/slider_gen.h"
 #include "components/basic/switch/switch_gen.h"
 #include "components/basic/table/table_gen.h"
+#include "components/buddy/buddy_gen.h"
 #include "components/cards/alarm/alarm_gen.h"
 #include "components/cards/light_temperature/light_temperature_gen.h"
 #include "components/cards/move_goal/move_goal_gen.h"
@@ -223,6 +224,7 @@ void examples_init_gen(const char * asset_path);
 #include "components/cards/weather/location_gen.h"
 #include "components/cards/weather/weather_gen.h"
 #include "screens/elements_gen.h"
+#include "screens/screen1_gen.h"
 
 #ifdef __cplusplus
 } /*extern "C"*/

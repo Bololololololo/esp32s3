@@ -15,6 +15,7 @@ list(
   ${CMAKE_CURRENT_LIST_DIR}/components/basic/slider/slider_gen.c
   ${CMAKE_CURRENT_LIST_DIR}/components/basic/switch/switch_gen.c
   ${CMAKE_CURRENT_LIST_DIR}/components/basic/table/table_gen.c
+  ${CMAKE_CURRENT_LIST_DIR}/components/buddy/buddy_gen.c
   ${CMAKE_CURRENT_LIST_DIR}/components/cards/alarm/alarm_gen.c
   ${CMAKE_CURRENT_LIST_DIR}/components/cards/light_temperature/light_temperature_gen.c
   ${CMAKE_CURRENT_LIST_DIR}/components/cards/move_goal/move_goal_gen.c
@@ -38,4 +39,5 @@ list(
   ${CMAKE_CURRENT_LIST_DIR}/fonts/Geist_SemiBold_ttf_data.c
   ${CMAKE_CURRENT_LIST_DIR}/fonts/Geist_SemiBold_ttf_data.c
   ${CMAKE_CURRENT_LIST_DIR}/fonts/Literata_Bold_ttf_data.c
-  ${CMAKE_CURRENT_LIST_DIR}/screens/elements_gen.c)
+  ${CMAKE_CURRENT_LIST_DIR}/screens/elements_gen.c
+  ${CMAKE_CURRENT_LIST_DIR}/screens/screen1_gen.c)
