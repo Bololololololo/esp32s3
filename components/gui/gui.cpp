@@ -23,17 +23,14 @@
 #include "esp_lcd_panel_io.h"
 #include "esp_lcd_touch_ft6x36.h"
 
-#include "lvgl_ui_editor/examples.h"
-#include "lvgl_ui_editor/components/robot/robot.h"
-
 static const char *TAG = "gui";
 
 #define LCD_HOST SPI2_HOST
 #define LCD_H_RES (320)
 #define LCD_V_RES (240)
 #define LCD_BIT_PER_PIXEL (16)
-#define LCD_DRAW_BUFF_HEIGHT (50)
-#define LCD_DRAW_BUFF_DOUBLE (true)
+#define LCD_DRAW_BUFF_HEIGHT (10)
+#define LCD_DRAW_BUFF_DOUBLE (false)
 
 #define PIN_NUM_LCD_CS (GPIO_NUM_10)
 #define PIN_NUM_LCD_PCLK (GPIO_NUM_12)
@@ -91,7 +88,7 @@ static esp_err_t app_lvgl_init(int task_affinity)
     /* Initialize LVGL */
     lvgl_port_cfg_t lvgl_cfg = ESP_LVGL_PORT_INIT_CONFIG();
     lvgl_cfg.task_affinity = task_affinity;
-    lvgl_cfg.task_max_sleep_ms = 10;
+    lvgl_cfg.task_max_sleep_ms = 500;
     lvgl_port_init(&lvgl_cfg);
 
     /* Add LCD screen */
@@ -99,7 +96,7 @@ static esp_err_t app_lvgl_init(int task_affinity)
     const lvgl_port_display_cfg_t disp_cfg = {
         .io_handle = lcd_io,
         .panel_handle = lcd_panel,
-        .buffer_size = LCD_H_RES * LCD_DRAW_BUFF_HEIGHT * sizeof(uint16_t),
+        .buffer_size = LCD_H_RES * LCD_DRAW_BUFF_HEIGHT,
         .double_buffer = LCD_DRAW_BUFF_DOUBLE,
         .hres = LCD_H_RES,
         .vres = LCD_V_RES,
@@ -110,14 +107,21 @@ static esp_err_t app_lvgl_init(int task_affinity)
             .mirror_x = true,
             .mirror_y = true,
         },
+        #if LVGL_VERSION_MAJOR >= 9
+        .color_format = LV_COLOR_FORMAT_RGB565,
+#endif
         .flags = {
-            .buff_dma = true,
+            /* Keep the LVGL draw buffer in SPIRAM for this SPI LCD setup.
+             * A mixed DMA+SPIRAM request can fall back to internal RAM on some ESP32-S3
+             * configurations, so we force SPIRAM and leave DMA off for the render buffer. */
+            .buff_dma = false,
             .buff_spiram = true,
 #if LVGL_VERSION_MAJOR >= 9
             .swap_bytes = true,
 #endif
         }
     };
+    ESP_LOGI(TAG, "LVGL draw buffer: SPIRAM=%d DMA=%d size=%u", disp_cfg.flags.buff_spiram, disp_cfg.flags.buff_dma, disp_cfg.buffer_size);
     lvgl_disp = lvgl_port_add_disp(&disp_cfg);
 
     /* Add touch input (for selected screen) */
@@ -135,17 +139,6 @@ static void app_main_display(void)
     /* Task lock */
     lvgl_port_lock(0);
 
-    examples_init("");
-    lv_subject_t message;
-    char msg_buf[32];
-    char prev_msg_buf[32];
-    // lv_obj_t *scr = screen1_create();
-
-    // lv_screen_load(scr);
-
-        create_robot_face_ui();
-
-    //setup_global_touch_listener(lvgl_touch_indev);
 
     /* Task unlock */
     lvgl_port_unlock();
@@ -245,7 +238,7 @@ void Gui::init() {
     initDisplay();
     initTouch();
     
-    ESP_ERROR_CHECK(app_lvgl_init(1)); // Initialize LVGL with no task affinity, allowing it to run on any core
+    ESP_ERROR_CHECK(app_lvgl_init(0));
     
     app_main_display();
 }
