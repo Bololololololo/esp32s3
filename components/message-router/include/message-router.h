@@ -2,7 +2,7 @@
 #define MESSAGE_ROUTER_H
 
 #include "componentIds.h"
-#include "componentInterf.h"
+#include "componentInterface.h"
 #include "esp_err.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"

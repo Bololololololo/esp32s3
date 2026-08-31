@@ -23,7 +23,7 @@ inline std::map<ComponentId, std::string> componentIdToString = {{COMPONENT_ID_L
                                                                  {COMPONENT_ID_STORAGE, "Storage"},
                                                                  {COMPONENT_ID_TEST_SUB, "Test Subscriber"},
                                                                  {COMPONENT_ID_TEST_PUB, "Test Publisher"}};
-#elif
+#else
 enum ComponentId {
     COMPONENT_ID_LVGL_DISPLAY = 0,
     COMPONENT_ID_LVGL_INPUT,

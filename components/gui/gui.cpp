@@ -7,21 +7,22 @@
 #include "lvgl.h"
 
 #include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
 #include "freertos/semphr.h"
+#include "freertos/task.h"
 
 #include "driver/gpio.h"
-#include "driver/spi_master.h"
 
+#include "esp_lcd_ili9341.h"
 #include "esp_lcd_panel_io_interface.h"
 #include "esp_lcd_panel_ops.h"
-#include "esp_lcd_ili9341.h"
 
 #include "esp_lvgl_port.h"
 
 #include "driver/i2c_master.h"
 #include "esp_lcd_panel_io.h"
 #include "esp_lcd_touch_ft6x36.h"
+
+#include "settings_demo.h"
 
 static const char *TAG = "gui";
 
@@ -40,14 +41,14 @@ static const char *TAG = "gui";
 #define PIN_NUM_LCD_BL (GPIO_NUM_45)
 
 /* Touch settings */
-#define TOUCH_I2C_NUM       (0)
-#define TOUCH_I2C_CLK_HZ    (400000)
+#define TOUCH_I2C_NUM (0)
+#define TOUCH_I2C_CLK_HZ (400000)
 
 /* LCD touch pins */
-#define TOUCH_I2C_SCL       (GPIO_NUM_15)
-#define TOUCH_I2C_SDA       (GPIO_NUM_16)
-#define TOUCH_GPIO_INT      (GPIO_NUM_17)
-#define TOUCH_GPIO_RST      (GPIO_NUM_18)
+#define TOUCH_I2C_SCL (GPIO_NUM_15)
+#define TOUCH_I2C_SDA (GPIO_NUM_16)
+#define TOUCH_GPIO_INT (GPIO_NUM_17)
+#define TOUCH_GPIO_RST (GPIO_NUM_18)
 
 /* LVGL display and touch */
 static lv_display_t *lvgl_disp = NULL;
@@ -55,36 +56,32 @@ static lv_indev_t *lvgl_touch_indev = NULL;
 static esp_lcd_panel_io_handle_t lcd_io = NULL;
 static esp_lcd_panel_handle_t lcd_panel = NULL;
 static i2c_master_bus_handle_t i2c_handle = NULL;
-static esp_lcd_panel_io_handle_t tp_io_handle= NULL;
+static esp_lcd_panel_io_handle_t tp_io_handle = NULL;
 static esp_lcd_touch_handle_t touch_handle = NULL;
 
-
-static void screen_touch_event_cb(lv_event_t * e)
-{
+static void screen_touch_event_cb(lv_event_t *e) {
     lv_event_code_t code = lv_event_get_code(e);
 
     if (code == LV_EVENT_PRESSED || code == LV_EVENT_PRESSING || code == LV_EVENT_RELEASED) {
         ESP_LOGE(TAG, "Screen touch event callback triggered: %d", (int)code);
         ESP_LOGE(TAG, "Screen is being pressed");
-        lv_indev_t * indev = (lv_indev_t *)lv_event_get_target(e);
+        lv_indev_t *indev = (lv_indev_t *)lv_event_get_target(e);
         if (indev) {
             lv_point_t point;
             lv_indev_get_point(indev, &point);
-            
+
             ESP_LOGE(TAG, "Screen Pressed at: X=%d, Y=%d", (int)point.x, (int)point.y);
         }
     }
 }
 
-void setup_global_touch_listener(lv_indev_t * indev)
-{
+void setup_global_touch_listener(lv_indev_t *indev) {
     ESP_LOGE(TAG, "Setting up global touch listener");
     // Add event callback to catch drag/touch coordinates globally from the indev
     lv_indev_add_event_cb(indev, screen_touch_event_cb, LV_EVENT_ALL, NULL);
 }
 
-static esp_err_t app_lvgl_init(int task_affinity)
-{
+static esp_err_t app_lvgl_init(int task_affinity) {
     /* Initialize LVGL */
     lvgl_port_cfg_t lvgl_cfg = ESP_LVGL_PORT_INIT_CONFIG();
     lvgl_cfg.task_affinity = task_affinity;
@@ -102,26 +99,27 @@ static esp_err_t app_lvgl_init(int task_affinity)
         .vres = LCD_V_RES,
         .monochrome = false,
         /* Rotation values must be same as used in esp_lcd for initial settings of the screen */
-        .rotation = {
-            .swap_xy = true,
-            .mirror_x = true,
-            .mirror_y = true,
-        },
-        #if LVGL_VERSION_MAJOR >= 9
+        .rotation =
+            {
+                .swap_xy = true,
+                .mirror_x = true,
+                .mirror_y = true,
+            },
+#if LVGL_VERSION_MAJOR >= 9
         .color_format = LV_COLOR_FORMAT_RGB565,
 #endif
         .flags = {
             /* Keep the LVGL draw buffer in SPIRAM for this SPI LCD setup.
              * A mixed DMA+SPIRAM request can fall back to internal RAM on some ESP32-S3
              * configurations, so we force SPIRAM and leave DMA off for the render buffer. */
-            .buff_dma = false,
+            .buff_dma = true,
             .buff_spiram = true,
 #if LVGL_VERSION_MAJOR >= 9
             .swap_bytes = true,
 #endif
-        }
-    };
-    ESP_LOGI(TAG, "LVGL draw buffer: SPIRAM=%d DMA=%d size=%u", disp_cfg.flags.buff_spiram, disp_cfg.flags.buff_dma, disp_cfg.buffer_size);
+        }};
+    ESP_LOGI(TAG, "LVGL draw buffer: SPIRAM=%d DMA=%d size=%u", disp_cfg.flags.buff_spiram, disp_cfg.flags.buff_dma,
+             disp_cfg.buffer_size);
     lvgl_disp = lvgl_port_add_disp(&disp_cfg);
 
     /* Add touch input (for selected screen) */
@@ -134,11 +132,12 @@ static esp_err_t app_lvgl_init(int task_affinity)
     return ESP_OK;
 }
 
-static void app_main_display(void)
-{
+static void app_main_display(void) {
     /* Task lock */
     lvgl_port_lock(0);
 
+    SettingsScreen settingsScreen;
+    settingsScreen.init();
 
     /* Task unlock */
     lvgl_port_unlock();
@@ -197,9 +196,7 @@ void Gui::initDisplay(void) {
 #endif
 }
 
-
-void Gui::initTouch(void)
-{
+void Gui::initTouch(void) {
     /* Initilize I2C */
     const i2c_master_bus_config_t i2c_config = {
         .i2c_port = TOUCH_I2C_NUM,
@@ -207,7 +204,7 @@ void Gui::initTouch(void)
         .scl_io_num = TOUCH_I2C_SCL,
         .clk_source = I2C_CLK_SRC_DEFAULT,
     };
-     
+
     ESP_ERROR_CHECK(i2c_new_master_bus(&i2c_config, &i2c_handle));
 
     /* Initialize touch HW */
@@ -216,15 +213,17 @@ void Gui::initTouch(void)
         .y_max = LCD_H_RES,
         .rst_gpio_num = GPIO_NUM_NC, // Shared with LCD reset
         .int_gpio_num = TOUCH_GPIO_INT,
-        .levels = {
-            .reset = 1,
-            .interrupt = 0,
-        },
-        .flags = {
-            .swap_xy = 1,
-            .mirror_x = 0,
-            .mirror_y = 1,
-        },
+        .levels =
+            {
+                .reset = 1,
+                .interrupt = 0,
+            },
+        .flags =
+            {
+                .swap_xy = 1,
+                .mirror_x = 0,
+                .mirror_y = 1,
+            },
     };
     esp_lcd_panel_io_i2c_config_t tp_io_config = ESP_LCD_TOUCH_IO_I2C_FT6x36_CONFIG();
     tp_io_config.scl_speed_hz = TOUCH_I2C_CLK_HZ;
@@ -237,8 +236,8 @@ void Gui::initTouch(void)
 void Gui::init() {
     initDisplay();
     initTouch();
-    
+
     ESP_ERROR_CHECK(app_lvgl_init(0));
-    
+
     app_main_display();
 }

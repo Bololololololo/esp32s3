@@ -4,6 +4,8 @@
 #include <fstream>
 #include <random>
 
+using namespace storage;
+
 static const char *TAG = "data_generator";
 
 #define BUFFER_SIZE 100

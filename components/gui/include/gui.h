@@ -55,4 +55,4 @@ class Gui {
     void init();
 };
 
-#endif /* GUI_H */
+#endif // GUI_H 

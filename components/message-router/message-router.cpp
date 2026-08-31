@@ -46,6 +46,7 @@ MessageRouter::MessageRouter(_cons) {
     // Create the router task
     TaskParameters_t taskParams = {.xRouterQueue = &this->xRouterQueue, .subscribersDB = &this->subscribersDB};
 
+    ESP_LOGI(TAG, "Message router task created");
     xTaskCreate(routerTask, "MessageRouterTask", 8192, &taskParams, 5, &this->xRouterTask);
 }
 

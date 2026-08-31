@@ -15,6 +15,7 @@ static const char *TAG = "sdmmc";
 
 using namespace messageRouter;
 
+namespace storage {
 esp_err_t Storage::mount() {
     esp_err_t ret{ESP_FAIL};
 
@@ -137,3 +138,4 @@ esp_err_t Storage::messageHandler(const Message &msg) {
     // Handle the message as needed
     return ESP_OK;
 }
+} // namespace storage

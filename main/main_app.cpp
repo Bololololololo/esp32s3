@@ -6,25 +6,27 @@
    software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
    CONDITIONS OF ANY KIND, either express or implied.
 */
+#include "cmd_catch2.h"
 #include "esp_check.h"
+#include "esp_console.h"
 #include "esp_err.h"
 #include "esp_log.h"
+#include "esp_system.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "gprof.h"
+#include "gui.h"
+#include "sdkconfig.h"
+#include "service_manager.h"
+#include "status_led.h"
+#include "storage.h"
+#include "wifi_service.h"
 #include <iostream>
 #include <memory>
 
-#include "esp_system.h"
-#include "sdkconfig.h"
-
-#include "gui.h"
-#include "status_led.h"
-#include "storage.h"
-
-#include "cmd_catch2.h"
-#include "esp_console.h"
-
-#include "gprof.h"
+using namespace services;
+using namespace storage;
+using namespace wifi;
 
 #define LOG_LEVEL ESP_LOG_INFO
 
@@ -66,7 +68,7 @@ void app_main(void) {
 
     status_led.setColor(utils::StatusLEDColor::GREEN);
 
-    // Configure console
+    //     /* Configure console */
     //     esp_console_repl_t *repl = NULL;
     //     esp_console_repl_config_t repl_config = ESP_CONSOLE_REPL_CONFIG_DEFAULT();
     //     repl_config.prompt = "catch2>";
@@ -97,6 +99,10 @@ void app_main(void) {
     /* Stop profiling and send results */
     // ESP_ERROR_CHECK(esp_gprof_save());
     // esp_gprof_deinit();
+
+    /* Start the WiFi service*/
+    ServiceManager *serviceManager = ServiceManager::getInstance();
+    serviceManager->startService(ServiceType::SERVICE_WIFI);
 
     while (1) {
         vTaskDelay(pdMS_TO_TICKS(100));

@@ -1,11 +1,13 @@
 #ifndef Storage_H
 #define Storage_H
 
-#include "componentInterf.h"
+#include "componentInterface.h"
 #include "esp_err.h"
 #include "sd_protocol_types.h"
 #include <memory>
 
+
+namespace storage {
 class Storage : public ComponentInterface {
   private:
     static std::unique_ptr<Storage> instance;
@@ -59,5 +61,6 @@ class Storage : public ComponentInterface {
 
     esp_err_t messageHandler(const Message &msg) override;
 };
+} // namespace storage
 
-#endif /* Storage_H */
+#endif // Storage_H

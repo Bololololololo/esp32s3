@@ -1,6 +1,6 @@
 #include "../include/message-router.h"
 #include "componentIds.h"
-#include "componentInterf.h"
+#include "componentInterface.h"
 #include "esp_log.h"
 
 class DummyComponent : public ComponentInterface {
