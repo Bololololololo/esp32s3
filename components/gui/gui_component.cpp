@@ -1,29 +1,21 @@
-#include <iostream>
-
+#include "gui_component.h"
+#include "driver/gpio.h"
+#include "driver/i2c_master.h"
+#include "esp_lcd_ili9341.h"
+#include "esp_lcd_panel_io.h"
+#include "esp_lcd_panel_io_interface.h"
+#include "esp_lcd_panel_ops.h"
+#include "esp_lcd_touch_ft6x36.h"
 #include "esp_log.h"
-#include "gui.h"
-
+#include "esp_lvgl_port.h"
 #include "esp_timer.h"
-#include "lvgl.h"
-
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
 #include "freertos/task.h"
-
-#include "driver/gpio.h"
-
-#include "esp_lcd_ili9341.h"
-#include "esp_lcd_panel_io_interface.h"
-#include "esp_lcd_panel_ops.h"
-
-#include "esp_lvgl_port.h"
-
-#include "driver/i2c_master.h"
-#include "esp_lcd_panel_io.h"
-#include "esp_lcd_touch_ft6x36.h"
-
+#include "lvgl.h"
+#include "message_router.h"
 #include "settings_demo.h"
-
+#include <iostream>
 static const char *TAG = "gui";
 
 #define LCD_HOST SPI2_HOST
@@ -75,7 +67,7 @@ static void screen_touch_event_cb(lv_event_t *e) {
     }
 }
 
-void setup_global_touch_listener(lv_indev_t *indev) {
+static void setup_global_touch_listener(lv_indev_t *indev) {
     ESP_LOGE(TAG, "Setting up global touch listener");
     // Add event callback to catch drag/touch coordinates globally from the indev
     lv_indev_add_event_cb(indev, screen_touch_event_cb, LV_EVENT_ALL, NULL);
@@ -141,9 +133,16 @@ static void app_main_display(void) {
 
     /* Task unlock */
     lvgl_port_unlock();
+
+    messageRouter::MessageRouter::getInstance()->publish(Message(ComponentId::COMPONENT_ID_WIFI, "GUI is ready"));
 }
 
-void Gui::initDisplay(void) {
+namespace gui {
+GuiComponent::GuiComponent(_cons) : ComponentInterface(ComponentId::COMPONENT_ID_LVGL_DISPLAY) {
+    messageRouter::MessageRouter::getInstance()->subscribe(std::make_shared<GuiComponent>(*this));
+}
+
+void GuiComponent::initDisplay(void) {
     ESP_LOGI(TAG, "Turn on the backlight");
     gpio_config_t io_conf = {
         .pin_bit_mask = BIT64(PIN_NUM_LCD_BL),
@@ -196,7 +195,7 @@ void Gui::initDisplay(void) {
 #endif
 }
 
-void Gui::initTouch(void) {
+void GuiComponent::initTouch(void) {
     /* Initilize I2C */
     const i2c_master_bus_config_t i2c_config = {
         .i2c_port = TOUCH_I2C_NUM,
@@ -233,7 +232,7 @@ void Gui::initTouch(void) {
     ESP_ERROR_CHECK(esp_lcd_touch_new_i2c_ft6x36(tp_io_handle, &tp_cfg, &touch_handle));
 }
 
-void Gui::init() {
+void GuiComponent::init() {
     initDisplay();
     initTouch();
 
@@ -241,3 +240,15 @@ void Gui::init() {
 
     app_main_display();
 }
+
+esp_err_t GuiComponent::messageHandler(const Message &msg) {
+    // Handle incoming messages related to GUI component
+    if (msg.id == ComponentId::COMPONENT_ID_LVGL_DISPLAY) {
+        // Process the message payload
+        std::printf("Received message for GUI component: %s\n", msg.payload);
+        // Add code to handle specific commands or data
+        return ESP_OK;
+    }
+    return ESP_ERR_INVALID_ARG; // Return error if message ID does not match
+}
+} // namespace gui

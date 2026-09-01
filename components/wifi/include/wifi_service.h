@@ -1,8 +1,8 @@
 #ifndef _WIFI_SERVICE_H_
 #define _WIFI_SERVICE_H_
 
-#include "serviceInterface.h"
-#include "wifi_comp.h"
+#include "service_interface.h"
+#include "wifi_component.h"
 #include <memory>
 
 using namespace wifi;

@@ -15,7 +15,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "gprof.h"
-#include "gui.h"
+#include "gui_component.h"
 #include "sdkconfig.h"
 #include "service_manager.h"
 #include "status_led.h"
@@ -61,11 +61,6 @@ void app_main(void) {
         ESP_LOGI(TAG, "SD card mounted successfully");
     }
 
-    /* Initialize the GUI */
-    Gui *gui = Gui::getInstance();
-    assert(gui != NULL);
-    gui->init();
-
     status_led.setColor(utils::StatusLEDColor::GREEN);
 
     //     /* Configure console */
@@ -102,7 +97,9 @@ void app_main(void) {
 
     /* Start the WiFi service*/
     ServiceManager *serviceManager = ServiceManager::getInstance();
+    serviceManager->startService(ServiceType::SERVICE_MSGR);
     serviceManager->startService(ServiceType::SERVICE_WIFI);
+    serviceManager->startService(ServiceType::SERVICE_GUI);
 
     while (1) {
         vTaskDelay(pdMS_TO_TICKS(100));

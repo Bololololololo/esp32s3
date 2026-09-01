@@ -1,7 +1,7 @@
 #ifndef WIFI_COMP_H
 #define WIFI_COMP_H
 
-#include "componentInterface.h"
+#include "component_interface.h"
 
 namespace wifi {
 
@@ -12,15 +12,15 @@ enum class WifiState {
 };
 
 class WifiComponent : public ComponentInterface {
-public:
+  public:
     WifiComponent();
 
-private:
+  private:
     esp_err_t messageHandler(const Message &msg) override;
     void connectToNetwork();
     void disconnectFromNetwork();
 };
 
-} // namespace wifis
+} // namespace wifi
 
 #endif // WIFI_COMP_H

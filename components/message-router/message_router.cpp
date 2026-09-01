@@ -1,8 +1,5 @@
-#include "message-router.h"
+#include "message_router.h"
 #include <esp_log.h>
-
-/* check the queue every 10 ms */
-#define tickTICK_PERIOD_MS 10 / portTICK_PERIOD_MS
 
 static const char *TAG = "message-router";
 
@@ -16,25 +13,23 @@ struct TaskParameters_t {
 static void routerTask(void *pvParameters) {
     Message receivedMsg;
     TaskParameters_t *params = (TaskParameters_t *)pvParameters;
-    QueueHandle_t *xRouterQueue = params->xRouterQueue;
-    std::unordered_map<ComponentId, std::vector<std::shared_ptr<ComponentInterface>>> *subscribersDB =
-        params->subscribersDB;
+    QueueHandle_t &xRouterQueue = *params->xRouterQueue;
+    auto &subscribersDB = *params->subscribersDB;
 
     for (;;) {
-        // Wait for a message to arrive in the queue
-        if (xQueueReceive(*xRouterQueue, &receivedMsg, tickTICK_PERIOD_MS) == pdPASS) {
+        // Block indefinitely until a message arrives (no unnecessary wakeups)
+        if (xQueueReceive(xRouterQueue, &receivedMsg, portMAX_DELAY) == pdPASS) {
             ESP_LOGI(TAG, "Received message %s: id %s", receivedMsg.payload,
                      componentIdToString[receivedMsg.id].c_str());
 
-            if (subscribersDB->find(receivedMsg.id) != subscribersDB->end()) {
-                for (const auto &subscriber : (*subscribersDB)[receivedMsg.id]) {
-                    if (subscriber) {
-                        subscriber->messageHandler(receivedMsg);
-                    }
+            // Single lookup: use find() iterator instead of find() + operator[]
+            auto it = subscribersDB.find(receivedMsg.id);
+            if (it != subscribersDB.end()) {
+                for (const auto &subscriber : it->second) {
+                    subscriber->messageHandler(receivedMsg);
                 }
             } else {
                 ESP_LOGW(TAG, "No subscribers found for message id: %d", receivedMsg.id);
-                ESP_LOGW(TAG, "Subscriber list size : %d", subscribersDB->size());
             }
         }
     }
@@ -59,21 +54,21 @@ esp_err_t MessageRouter::publish(const Message &message) {
     return ESP_OK;
 }
 
-esp_err_t MessageRouter::subscribe(ComponentId componentId, std::shared_ptr<ComponentInterface> subscriber) {
-    ESP_LOGI(TAG, "Subscribed to component: %s", componentIdToString[componentId].c_str());
+esp_err_t MessageRouter::subscribe(std::shared_ptr<ComponentInterface> subscriber) {
+    ESP_LOGI(TAG, "Subscribed to component: %s", componentIdToString[subscriber->getComponentId()].c_str());
 
     if (subscriber != nullptr) {
-        subscribersDB[componentId].push_back(subscriber);
+        subscribersDB[subscriber->getComponentId()].push_back(subscriber);
     }
 
     return ESP_OK;
 }
 
-esp_err_t MessageRouter::unsubscribe(ComponentId componentId, std::shared_ptr<ComponentInterface> subscriber) {
-    ESP_LOGI(TAG, "Unsubscribed from component: %s", componentIdToString[componentId].c_str());
+esp_err_t MessageRouter::unsubscribe(std::shared_ptr<ComponentInterface> subscriber) {
+    ESP_LOGI(TAG, "Unsubscribed from component: %s", componentIdToString[subscriber->getComponentId()].c_str());
 
-    if (subscriber != nullptr && subscribersDB.find(componentId) != subscribersDB.end()) {
-        auto &subscribers = subscribersDB[componentId];
+    if (subscriber != nullptr && subscribersDB.find(subscriber->getComponentId()) != subscribersDB.end()) {
+        auto &subscribers = subscribersDB[subscriber->getComponentId()];
         subscribers.erase(std::remove(subscribers.begin(), subscribers.end(), subscriber), subscribers.end());
     }
 

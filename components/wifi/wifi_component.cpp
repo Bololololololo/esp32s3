@@ -1,12 +1,12 @@
-#include "wifi_comp.h"
-#include "message-router.h"
+#include "wifi_component.h"
+#include "message_router.h"
 
 using namespace messageRouter;
 
 namespace wifi {
 WifiComponent::WifiComponent() : ComponentInterface(ComponentId::COMPONENT_ID_WIFI) {
     // Initialization code for the WiFi component can go here
-    messageRouter::MessageRouter::getInstance()->subscribe(ComponentId::COMPONENT_ID_WIFI, std::make_shared<WifiComponent>(*this));
+    messageRouter::MessageRouter::getInstance()->subscribe(std::make_shared<WifiComponent>(*this));
 }
 
 esp_err_t WifiComponent::messageHandler(const Message &msg) {
@@ -19,4 +19,4 @@ esp_err_t WifiComponent::messageHandler(const Message &msg) {
     }
     return ESP_ERR_INVALID_ARG; // Return error if message ID does not match
 }
-}
+} // namespace wifi

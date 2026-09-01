@@ -10,7 +10,7 @@ else()
     set(extra_args "")
 endif()
 
-idf_component_register(SRCS "${SOURCES}"
+idf_component_register(SRCS "storage.cpp" "${SOURCES}"
                        INCLUDE_DIRS "include"
                        PRIV_REQUIRES sdmmc fatfs catch2 perfmon log interfaces message-router
                        ${extra_args})
