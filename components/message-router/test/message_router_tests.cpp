@@ -14,31 +14,66 @@ static const char *TAG = "MessageRouterTests";
 
 using namespace messageRouter;
 
-TEST_CASE("MessageRouter: Basic Operations", "[message-router]") {
+TEST_CASE("MessageRouter: Basic Operations 1S/1P", "[unit][message-router]") {
     ESP_LOGI(TAG, "Running MessageRouter: Basic Operations");
 
     auto dummySubscriber = std::make_shared<DummyComponent>(ComponentId::COMPONENT_ID_TEST_SUB);
     auto dummyPublisher = std::make_shared<DummyComponent>(ComponentId::COMPONENT_ID_TEST_PUB);
 
-    MessageRouter::getInstance()->subscribe(dummySubscriber);
+    MessageRouter::getInstance()->subscribe(dummySubscriber, ComponentId::COMPONENT_ID_TEST_PUB);
     MessageRouter::getInstance()->publish({ComponentId::COMPONENT_ID_TEST_PUB, "Banana"});
 
-    sleep(1); // Wait for the message to be processed
+    vTaskDelay(pdMS_TO_TICKS(200)); // Wait for the message to be processed
 
     CHECK(dummySubscriber->lastMessage.id == ComponentId::COMPONENT_ID_TEST_PUB);
     CHECK(std::string(dummySubscriber->lastMessage.payload) == "Banana");
 
-    MessageRouter::getInstance()->unsubscribe(dummySubscriber);
+    MessageRouter::getInstance()->unsubscribe(dummySubscriber, ComponentId::COMPONENT_ID_TEST_PUB);
     MessageRouter::getInstance()->publish({ComponentId::COMPONENT_ID_TEST_PUB, "Apple"});
     CHECK(std::string(dummySubscriber->lastMessage.payload) ==
           "Banana"); // Should still be "Banana" since we unsubscribed
+}
+
+TEST_CASE("MessageRouter: Basic Operations 3S/1P", "[unit][message-router]") {
+    ESP_LOGI(TAG, "Running MessageRouter: Basic Operations");
+
+    auto dummySubscriber = std::make_shared<DummyComponent>(ComponentId::COMPONENT_ID_TEST_SUB);
+    auto dummySubscriber2 = std::make_shared<DummyComponent>(ComponentId::COMPONENT_ID_TEST_SUB1);
+    auto dummySubscriber3 = std::make_shared<DummyComponent>(ComponentId::COMPONENT_ID_TEST_SUB2);
+    auto dummyPublisher = std::make_shared<DummyComponent>(ComponentId::COMPONENT_ID_TEST_PUB);
+
+    MessageRouter::getInstance()->subscribe(dummySubscriber, ComponentId::COMPONENT_ID_TEST_PUB);
+    MessageRouter::getInstance()->subscribe(dummySubscriber2, ComponentId::COMPONENT_ID_TEST_PUB);
+    MessageRouter::getInstance()->subscribe(dummySubscriber3, ComponentId::COMPONENT_ID_TEST_PUB);
+    MessageRouter::getInstance()->publish({ComponentId::COMPONENT_ID_TEST_PUB, "Banana"});
+
+    vTaskDelay(pdMS_TO_TICKS(200));
+
+    CHECK(dummySubscriber->lastMessage.id == ComponentId::COMPONENT_ID_TEST_PUB);
+    CHECK(std::string(dummySubscriber->lastMessage.payload) == "Banana");
+    CHECK(dummySubscriber2->lastMessage.id == ComponentId::COMPONENT_ID_TEST_PUB);
+    CHECK(std::string(dummySubscriber2->lastMessage.payload) == "Banana");
+    CHECK(dummySubscriber3->lastMessage.id == ComponentId::COMPONENT_ID_TEST_PUB);
+    CHECK(std::string(dummySubscriber3->lastMessage.payload) == "Banana");
+
+    MessageRouter::getInstance()->unsubscribe(dummySubscriber, ComponentId::COMPONENT_ID_TEST_PUB);
+    MessageRouter::getInstance()->publish({ComponentId::COMPONENT_ID_TEST_PUB, "Apple"});
+
+    vTaskDelay(pdMS_TO_TICKS(200));
+
+    CHECK(std::string(dummySubscriber->lastMessage.payload) ==
+          "Banana"); // Should still be "Banana" since we unsubscribed
+    CHECK(dummySubscriber2->lastMessage.id == ComponentId::COMPONENT_ID_TEST_PUB);
+    CHECK(std::string(dummySubscriber2->lastMessage.payload) == "Apple");
+    CHECK(dummySubscriber3->lastMessage.id == ComponentId::COMPONENT_ID_TEST_PUB);
+    CHECK(std::string(dummySubscriber3->lastMessage.payload) == "Apple");
 }
 
 // ============================================================================
 // MULTITHREADING TESTS
 // ============================================================================
 
-TEST_CASE("MessageRouter: Concurrent Publishing from Multiple Threads", "[message-router-multithreading]") {
+TEST_CASE("MessageRouter: Concurrent Publishing from Multiple Threads", "[unit][message-router-multithreading]") {
     ESP_LOGI(TAG, "Testing concurrent publishing from multiple threads");
 
     auto subscriber = std::make_shared<DummyComponent>(ComponentId::COMPONENT_ID_TEST_SUB);
@@ -79,7 +114,7 @@ TEST_CASE("MessageRouter: Concurrent Publishing from Multiple Threads", "[messag
     MessageRouter::getInstance()->unsubscribe(subscriber);
 }
 
-TEST_CASE("MessageRouter: Concurrent Subscribe/Unsubscribe Operations", "[message-router-multithreading]") {
+TEST_CASE("MessageRouter: Concurrent Subscribe/Unsubscribe Operations", "[unit][message-router-multithreading]") {
     ESP_LOGI(TAG, "Testing concurrent subscribe/unsubscribe operations");
 
     const int NUM_SUBSCRIBERS = 5;
@@ -122,7 +157,7 @@ TEST_CASE("MessageRouter: Concurrent Subscribe/Unsubscribe Operations", "[messag
     }
 }
 
-TEST_CASE("MessageRouter: Concurrent Publish and Subscribe", "[message-router-multithreading]") {
+TEST_CASE("MessageRouter: Concurrent Publish and Subscribe", "[unit][message-router-multithreading]") {
     ESP_LOGI(TAG, "Testing concurrent publish and subscribe operations");
 
     auto subscriber1 = std::make_shared<DummyComponent>(ComponentId::COMPONENT_ID_TEST_SUB);
@@ -171,7 +206,8 @@ TEST_CASE("MessageRouter: Concurrent Publish and Subscribe", "[message-router-mu
     MessageRouter::getInstance()->unsubscribe(subscriber2);
 }
 
-TEST_CASE("MessageRouter: Multiple Subscribers Receive Messages Concurrently", "[message-router-multithreading]") {
+TEST_CASE("MessageRouter: Multiple Subscribers Receive Messages Concurrently",
+          "[unit][message-router-multithreading]") {
     ESP_LOGI(TAG, "Testing multiple subscribers receiving messages concurrently");
 
     const int NUM_SUBSCRIBERS = 6;

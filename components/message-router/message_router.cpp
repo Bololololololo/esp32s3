@@ -5,31 +5,82 @@ static const char *TAG = "message-router";
 
 namespace messageRouter {
 
+static void printSubscribersDb() {
+    std::lock_guard<std::recursive_mutex> lock(MessageRouter::getInstance()->getDbMutex());
+    ESP_LOGI(TAG, "------------------------------------------------------------");
+    ESP_LOGI(TAG, "Current Subscribers Database:");
+    auto &subscribersDB = MessageRouter::getInstance()->getSubscribersDB();
+    for (const auto &entry : subscribersDB) {
+        ComponentId sourceId = entry.first;
+        const auto &subscribers = entry.second;
+
+        ESP_LOGI(TAG, "Source Component ID: %s", componentIdToString[sourceId].c_str());
+        for (const auto &subscriber : subscribers) {
+            ESP_LOGI(TAG, "  Subscriber Component ID: %s", componentIdToString[subscriber->getComponentId()].c_str());
+        }
+    }
+    ESP_LOGI(TAG, "------------------------------------------------------------");
+}
+
 struct TaskParameters_t {
     QueueHandle_t *xRouterQueue;
-    std::unordered_map<ComponentId, std::vector<std::shared_ptr<ComponentInterface>>> *subscribersDB;
+    MessageRouter *router; // Pass router instance instead of raw pointers
 };
 
 static void routerTask(void *pvParameters) {
     Message receivedMsg;
     TaskParameters_t *params = (TaskParameters_t *)pvParameters;
     QueueHandle_t &xRouterQueue = *params->xRouterQueue;
-    auto &subscribersDB = *params->subscribersDB;
+    MessageRouter *router = params->router;
 
     for (;;) {
         // Block indefinitely until a message arrives (no unnecessary wakeups)
         if (xQueueReceive(xRouterQueue, &receivedMsg, portMAX_DELAY) == pdPASS) {
             ESP_LOGI(TAG, "Received message %s: id %s", receivedMsg.payload,
                      componentIdToString[receivedMsg.id].c_str());
+            {
+                // Acquire lock and copy subscribers to avoid holding lock during callback
+                std::vector<std::shared_ptr<ComponentInterface>> subscribers_copy;
+                std::vector<std::shared_ptr<ComponentInterface>> wildcard_subscribers_copy;
 
-            // Single lookup: use find() iterator instead of find() + operator[]
-            auto it = subscribersDB.find(receivedMsg.id);
-            if (it != subscribersDB.end()) {
-                for (const auto &subscriber : it->second) {
-                    subscriber->messageHandler(receivedMsg);
+                {
+                    std::lock_guard<std::recursive_mutex> lock(router->getDbMutex());
+                    auto &subscribersDB = router->getSubscribersDB();
+
+                    // Single lookup: use find() iterator instead of find() + operator[]
+                    auto it = subscribersDB.find(receivedMsg.id);
+                    if (it != subscribersDB.end()) {
+                        subscribers_copy = it->second; // Make a copy while holding the lock
+                    }
+
+                    // Also deliver to wildcard subscribers (COMPONENT_ID_ALL)
+                    if (receivedMsg.id != COMPONENT_ID_ALL) {
+                        auto wildcard_it = subscribersDB.find(COMPONENT_ID_ALL);
+                        if (wildcard_it != subscribersDB.end()) {
+                            wildcard_subscribers_copy = wildcard_it->second; // Copy
+                        }
+                    }
+                } // Release lock before calling messageHandler
+
+                // Deliver to specific subscribers outside lock (exclude publisher)
+                for (const auto &subscriber : subscribers_copy) {
+                    // Don't deliver to the publisher itself
+                    if (subscriber->getComponentId() != receivedMsg.id) {
+                        subscriber->messageHandler(receivedMsg);
+                    }
                 }
-            } else {
-                ESP_LOGW(TAG, "No subscribers found for message id: %d", receivedMsg.id);
+
+                // Deliver to wildcard subscribers outside lock (exclude publisher)
+                for (const auto &subscriber : wildcard_subscribers_copy) {
+                    // Don't deliver to the publisher itself
+                    if (subscriber->getComponentId() != receivedMsg.id) {
+                        subscriber->messageHandler(receivedMsg);
+                    }
+                }
+
+                if (subscribers_copy.empty() && wildcard_subscribers_copy.empty()) {
+                    ESP_LOGW(TAG, "No subscribers found for message id: %d", receivedMsg.id);
+                }
             }
         }
     }
@@ -39,7 +90,7 @@ MessageRouter::MessageRouter(_cons) {
     // Create a FreeRTOS queue for message routing
     this->xRouterQueue = xQueueCreate(10, sizeof(Message));
     // Create the router task
-    TaskParameters_t taskParams = {.xRouterQueue = &this->xRouterQueue, .subscribersDB = &this->subscribersDB};
+    TaskParameters_t taskParams = {.xRouterQueue = &this->xRouterQueue, .router = this};
 
     ESP_LOGI(TAG, "Message router task created");
     xTaskCreate(routerTask, "MessageRouterTask", 8192, &taskParams, 5, &this->xRouterTask);
@@ -54,24 +105,34 @@ esp_err_t MessageRouter::publish(const Message &message) {
     return ESP_OK;
 }
 
-esp_err_t MessageRouter::subscribe(std::shared_ptr<ComponentInterface> subscriber) {
-    ESP_LOGI(TAG, "Subscribed to component: %s", componentIdToString[subscriber->getComponentId()].c_str());
+esp_err_t MessageRouter::subscribe(std::shared_ptr<ComponentInterface> subscriber, ComponentId sourceComponentId) {
+    ESP_LOGI(TAG, "Component %s subscribed to messages from: %s",
+             componentIdToString[subscriber->getComponentId()].c_str(), componentIdToString[sourceComponentId].c_str());
 
     if (subscriber != nullptr) {
-        subscribersDB[subscriber->getComponentId()].push_back(subscriber);
+        std::lock_guard<std::recursive_mutex> lock(dbMutex);
+        subscribersDB[sourceComponentId].push_back(subscriber);
     }
 
+    // printSubscribersDb();
     return ESP_OK;
 }
 
-esp_err_t MessageRouter::unsubscribe(std::shared_ptr<ComponentInterface> subscriber) {
-    ESP_LOGI(TAG, "Unsubscribed from component: %s", componentIdToString[subscriber->getComponentId()].c_str());
+esp_err_t MessageRouter::unsubscribe(std::shared_ptr<ComponentInterface> subscriber, ComponentId sourceComponentId) {
+    ESP_LOGI(TAG, "Component %s unsubscribed from messages from: %s",
+             componentIdToString[subscriber->getComponentId()].c_str(), componentIdToString[sourceComponentId].c_str());
 
-    if (subscriber != nullptr && subscribersDB.find(subscriber->getComponentId()) != subscribersDB.end()) {
-        auto &subscribers = subscribersDB[subscriber->getComponentId()];
-        subscribers.erase(std::remove(subscribers.begin(), subscribers.end(), subscriber), subscribers.end());
+    if (subscriber != nullptr) {
+        std::lock_guard<std::recursive_mutex> lock(dbMutex);
+        auto it = subscribersDB.find(sourceComponentId);
+        if (it != subscribersDB.end()) {
+            auto &subscribers = it->second;
+            subscribers.erase(std::remove(subscribers.begin(), subscribers.end(), subscriber), subscribers.end());
+        }
     }
 
+    // printSubscribersDb();
     return ESP_OK;
 }
+
 } // namespace messageRouter

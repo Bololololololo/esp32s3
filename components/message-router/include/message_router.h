@@ -8,6 +8,7 @@
 #include "freertos/queue.h"
 #include "freertos/task.h" // Usually needed to manage the tasks using the queue
 #include <memory>
+#include <mutex>
 #include <stdio.h>
 #include <unordered_map>
 #include <vector>
@@ -17,11 +18,15 @@ namespace messageRouter {
 class MessageRouter {
   private:
     static std::unique_ptr<MessageRouter> instance;
+
     struct _cons {
         explicit _cons() = default;
     };
 
-    std::unordered_map<ComponentId, std::vector<std::shared_ptr<ComponentInterface>>> subscribersDB;
+    mutable std::recursive_mutex dbMutex; // Protects subscribersDB from concurrent access
+
+    std::unordered_map<ComponentId, std::vector<std::shared_ptr<ComponentInterface>>>
+        subscribersDB; // Protected by dbMutex
 
     TaskHandle_t xRouterTask;
     QueueHandle_t xRouterQueue;
@@ -42,8 +47,18 @@ class MessageRouter {
         return instance.get();
     }
 
-    esp_err_t subscribe(std::shared_ptr<ComponentInterface> subscriber);
-    esp_err_t unsubscribe(std::shared_ptr<ComponentInterface> subscriber);
+    std::unordered_map<ComponentId, std::vector<std::shared_ptr<ComponentInterface>>> &getSubscribersDB() {
+        return subscribersDB;
+    }
+
+    std::recursive_mutex &getDbMutex() const {
+        return dbMutex;
+    }
+
+    esp_err_t subscribe(std::shared_ptr<ComponentInterface> subscriber,
+                        ComponentId sourceComponentId = COMPONENT_ID_ALL);
+    esp_err_t unsubscribe(std::shared_ptr<ComponentInterface> subscriber,
+                          ComponentId sourceComponentId = COMPONENT_ID_ALL);
     esp_err_t publish(const Message &message);
 };
 } // namespace messageRouter
