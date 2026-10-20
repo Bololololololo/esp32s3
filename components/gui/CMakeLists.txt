@@ -14,5 +14,6 @@ idf_component_register(SRCS ${SOURCES} ${LVGL_UI_SRCS}
                      esp_lcd_touch_ft6x36 driver interfaces message-router)
 
 target_compile_definitions(__idf_gui PRIVATE LV_LVGL_H_INCLUDE_SIMPLE)
+target_compile_options(__idf_gui PRIVATE -Wno-missing-field-initializers)
 
     

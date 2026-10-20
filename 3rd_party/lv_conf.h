@@ -27,7 +27,7 @@
  *====================*/
 
 /** Color depth: 1 (I1), 8 (L8), 16 (RGB565), 24 (RGB888), 32 (XRGB8888) */
-#define LV_COLOR_DEPTH 16
+#define LV_COLOR_FORMAT_DEFAULT LV_COLOR_FORMAT_RGB565
 
 /*=========================
    STDLIB WRAPPER SETTINGS
@@ -78,9 +78,6 @@
     /* When LV_MEM_CUSTOM is enabled this value is ignored by LVGL, but keeping a
      * sane value avoids confusion when debugging memory usage. */
     #define LV_MEM_SIZE (128 * 1024U)         /**< [bytes] */
-
-    /** Size of the memory expand for `lv_malloc()` in bytes */
-    #define LV_MEM_POOL_EXPAND_SIZE 0
 
     /** Set an address for the memory pool instead of allocating it as a normal array. Can be in external SRAM too. */
     #define LV_MEM_ADR 0     /**< 0: unused*/
@@ -518,7 +515,7 @@
 #define LV_USE_ASSERT_OBJ           1   /**< Check the object's type and existence (e.g. not deleted). (Slow) */
 
 /** Add a custom handler when assert happens e.g. to restart MCU. */
-#define LV_ASSERT_HANDLER_INCLUDE <stdint.h>
+#define LV_ASSERT_CUSTOM_INCLUDE <stdio.h>
 #define LV_ASSERT_HANDLER while(1);     /**< Halt by default */
 
 /*-------------

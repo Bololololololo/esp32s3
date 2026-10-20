@@ -22,8 +22,8 @@ static const char *TAG = "gui";
 #define LCD_H_RES (320)
 #define LCD_V_RES (240)
 #define LCD_BIT_PER_PIXEL (16)
-#define LCD_DRAW_BUFF_HEIGHT (10)
-#define LCD_DRAW_BUFF_DOUBLE (false)
+#define LCD_DRAW_BUFF_HEIGHT (40)
+#define LCD_DRAW_BUFF_DOUBLE (true)
 
 #define PIN_NUM_LCD_CS (GPIO_NUM_10)
 #define PIN_NUM_LCD_PCLK (GPIO_NUM_12)
@@ -85,6 +85,7 @@ static esp_err_t app_lvgl_init(int task_affinity) {
     const lvgl_port_display_cfg_t disp_cfg = {
         .io_handle = lcd_io,
         .panel_handle = lcd_panel,
+        .control_handle = lcd_panel,
         .buffer_size = LCD_H_RES * LCD_DRAW_BUFF_HEIGHT,
         .double_buffer = LCD_DRAW_BUFF_DOUBLE,
         .hres = LCD_H_RES,
@@ -109,6 +110,7 @@ static esp_err_t app_lvgl_init(int task_affinity) {
 #if LVGL_VERSION_MAJOR >= 9
             .swap_bytes = true,
 #endif
+            .full_refresh = false,
         }};
     ESP_LOGI(TAG, "LVGL draw buffer: SPIRAM=%d DMA=%d size=%u", disp_cfg.flags.buff_spiram, disp_cfg.flags.buff_dma,
              disp_cfg.buffer_size);

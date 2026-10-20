@@ -14,7 +14,6 @@
 #include "esp_system.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#include "gprof.h"
 #include "gui_component.h"
 #include "sdkconfig.h"
 #include "service_manager.h"
@@ -99,7 +98,7 @@ void app_main(void) {
     ServiceManager *serviceManager = ServiceManager::getInstance();
     // serviceManager->startService(ServiceType::SERVICE_MSGR);
     // serviceManager->startService(ServiceType::SERVICE_WIFI);
-    // serviceManager->startService(ServiceType::SERVICE_GUI);
+    serviceManager->startService(ServiceType::SERVICE_GUI);
 
     while (1) {
         vTaskDelay(pdMS_TO_TICKS(100));

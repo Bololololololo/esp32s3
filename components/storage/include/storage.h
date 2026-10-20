@@ -38,7 +38,7 @@ class Storage : public ComponentInterface {
     esp_err_t mount();
     esp_err_t unmount();
 
-    esp_err_t write_file(const char *path, char *data, std::ios_base::openmode mode = std::ios::out);
+    esp_err_t write_file(const char *path, const char *data, std::ios_base::openmode mode = std::ios::out);
     esp_err_t read_file(const char *path, char *buffer, size_t buffer_size);
     esp_err_t delete_file(const char *path);
 

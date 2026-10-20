@@ -20,8 +20,11 @@ esp_err_t Storage::mount() {
     esp_err_t ret{ESP_FAIL};
 
     // 1. Options for mounting the filesystem
-    esp_vfs_fat_sdmmc_mount_config_t mount_config = {
-        .format_if_mount_failed = false, .max_files = 5, .allocation_unit_size = 16 * 1024};
+    esp_vfs_fat_sdmmc_mount_config_t mount_config = {.format_if_mount_failed = false,
+                                                     .max_files = 5,
+                                                     .allocation_unit_size = 16 * 1024,
+                                                     .disk_status_check_enable = false,
+                                                     .use_one_fat = false};
 
     sdmmc_card_t *card;
     const char mount_point[] = MOUNT_POINT;
@@ -88,7 +91,7 @@ esp_err_t Storage::unmount() {
     return ESP_OK;
 }
 
-esp_err_t Storage::write_file(const char *path, char *data, std::ios_base::openmode mode) {
+esp_err_t Storage::write_file(const char *path, const char *data, std::ios_base::openmode mode) {
     ESP_LOGI(TAG, "Opening file %s", path);
 
     std::ofstream outFile(path, std::ios::binary | mode);
