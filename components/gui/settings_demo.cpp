@@ -1,13 +1,52 @@
 #include "settings_demo.h"
+#include "esp_log.h"
+#include "message_router.h"
+#include <cstdio>
+#include <cstring>
+
+namespace {
+static const char *TAG = "settings";
+static lv_obj_t *wifiStatusLabel = nullptr;
+
+static void publishWifiMode(WifiMode mode) {
+    const char *modeName = nullptr;
+    switch (mode) {
+    case WifiMode::DISABLED:
+        modeName = "disabled";
+        break;
+    case WifiMode::STATION:
+        modeName = "station";
+        break;
+    case WifiMode::ACCESS_POINT:
+        modeName = "provision";
+        break;
+    }
+
+    const esp_err_t ret =
+        messageRouter::MessageRouter::getInstance()->publish(Message(COMPONENT_ID_LVGL_DISPLAY, "wifi:" + std::string(modeName)));
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to publish Wi-Fi mode selection: %s", esp_err_to_name(ret));
+    }
+}
+
+static void requestWifiStatus() {
+    const esp_err_t ret =
+        messageRouter::MessageRouter::getInstance()->publish(Message(COMPONENT_ID_LVGL_DISPLAY, "wifi:status"));
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to request Wi-Fi status: %s", esp_err_to_name(ret));
+    }
+}
+} // namespace
 
 SettingsScreen::SettingsScreen() {
     // 1. Create root screen object (240x320)
     m_screen = lv_obj_create(nullptr);
     lv_obj_set_size(m_screen, 240, 320);
+    lv_obj_remove_flag(m_screen, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_set_style_bg_color(m_screen, lv_color_hex(0x121212), 0);
     lv_obj_set_flex_flow(m_screen, LV_FLEX_FLOW_COLUMN);
-    lv_obj_set_style_pad_all(m_screen, 8, 0);
-    lv_obj_set_style_pad_row(m_screen, 10, 0);
+    lv_obj_set_style_pad_all(m_screen, 6, 0);
+    lv_obj_set_style_pad_row(m_screen, 6, 0);
 }
 
 void SettingsScreen::init() {
@@ -17,40 +56,56 @@ void SettingsScreen::init() {
     lv_obj_set_style_text_color(title, lv_color_hex(0xFFFFFF), 0);
     lv_obj_set_style_text_font(title, &lv_font_montserrat_18, 0);
 
-    // -------------------------------------------------------------
-    // Wi-Fi Section
-    // -------------------------------------------------------------
-    lv_obj_t *wifiLabel = lv_label_create(m_screen);
+    lv_obj_t *tabview = lv_tabview_create(m_screen);
+    lv_obj_set_width(tabview, lv_pct(100));
+    lv_obj_set_flex_grow(tabview, 1);
+    lv_tabview_set_tab_bar_size(tabview, 36);
+
+    lv_obj_t *wifiPage = lv_tabview_add_tab(tabview, "Wi-Fi");
+    lv_obj_remove_flag(wifiPage, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_style_pad_all(wifiPage, 6, 0);
+    lv_obj_set_style_pad_row(wifiPage, 6, 0);
+
+    lv_obj_t *wifiLabel = lv_label_create(wifiPage);
     lv_label_set_text(wifiLabel, "Wi-Fi Mode");
     lv_obj_set_style_text_color(wifiLabel, lv_color_hex(0x8E8E93), 0);
 
-    m_wifiGroup = lv_obj_create(m_screen);
+    m_wifiGroup = lv_obj_create(wifiPage);
+    lv_obj_remove_flag(m_wifiGroup, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_set_width(m_wifiGroup, lv_pct(100));
     lv_obj_set_height(m_wifiGroup, LV_SIZE_CONTENT);
     lv_obj_set_flex_flow(m_wifiGroup, LV_FLEX_FLOW_COLUMN);
-    lv_obj_set_style_pad_all(m_wifiGroup, 4, 0);
-    lv_obj_set_style_pad_row(m_wifiGroup, 4, 0);
+    lv_obj_set_style_pad_all(m_wifiGroup, 3, 0);
+    lv_obj_set_style_pad_row(m_wifiGroup, 2, 0);
     lv_obj_set_style_bg_color(m_wifiGroup, lv_color_hex(0x1C1C1E), 0);
     lv_obj_set_style_border_width(m_wifiGroup, 0, 0);
     lv_obj_set_style_radius(m_wifiGroup, 10, 0);
 
     createRadioOption(m_wifiGroup, " Disabled", false, static_cast<uint32_t>(WifiMode::DISABLED));
     createRadioOption(m_wifiGroup, " Station (STA)", true, static_cast<uint32_t>(WifiMode::STATION));
-    createRadioOption(m_wifiGroup, " Access Point (AP)", false, static_cast<uint32_t>(WifiMode::ACCESS_POINT));
+    createRadioOption(m_wifiGroup, " Setup portal (AP)", false, static_cast<uint32_t>(WifiMode::ACCESS_POINT));
+    wifiStatusLabel = lv_label_create(wifiPage);
+    lv_obj_set_width(wifiStatusLabel, lv_pct(100));
+    lv_label_set_long_mode(wifiStatusLabel, LV_LABEL_LONG_WRAP);
+    lv_obj_set_style_text_color(wifiStatusLabel, lv_color_hex(0x8E8E93), 0);
+    lv_label_set_text(wifiStatusLabel, "Checking Wi-Fi status...");
 
-    // -------------------------------------------------------------
-    // Bluetooth Section
-    // -------------------------------------------------------------
-    lv_obj_t *btLabel = lv_label_create(m_screen);
+    lv_obj_t *btPage = lv_tabview_add_tab(tabview, "Bluetooth");
+    lv_obj_remove_flag(btPage, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_style_pad_all(btPage, 6, 0);
+    lv_obj_set_style_pad_row(btPage, 6, 0);
+
+    lv_obj_t *btLabel = lv_label_create(btPage);
     lv_label_set_text(btLabel, "Bluetooth Radio");
     lv_obj_set_style_text_color(btLabel, lv_color_hex(0x8E8E93), 0);
 
-    m_btGroup = lv_obj_create(m_screen);
+    m_btGroup = lv_obj_create(btPage);
+    lv_obj_remove_flag(m_btGroup, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_set_width(m_btGroup, lv_pct(100));
     lv_obj_set_height(m_btGroup, LV_SIZE_CONTENT);
     lv_obj_set_flex_flow(m_btGroup, LV_FLEX_FLOW_COLUMN);
-    lv_obj_set_style_pad_all(m_btGroup, 4, 0);
-    lv_obj_set_style_pad_row(m_btGroup, 4, 0);
+    lv_obj_set_style_pad_all(m_btGroup, 3, 0);
+    lv_obj_set_style_pad_row(m_btGroup, 2, 0);
     lv_obj_set_style_bg_color(m_btGroup, lv_color_hex(0x1C1C1E), 0);
     lv_obj_set_style_border_width(m_btGroup, 0, 0);
     lv_obj_set_style_radius(m_btGroup, 10, 0);
@@ -61,12 +116,39 @@ void SettingsScreen::init() {
 
     // Load active screen in LVGL 9
     lv_screen_load(m_screen);
+    publishWifiMode(m_wifiMode);
+    requestWifiStatus();
+}
+
+void settings_screen_update_wifi_status(const char *status) {
+    if (wifiStatusLabel && status) {
+        if (std::strncmp(status, "portal|", 7) == 0) {
+            const char *ssid = status + 7;
+            const char *password = std::strchr(ssid, '|');
+            if (password) {
+                char text[192];
+                std::snprintf(text, sizeof(text), "Connect to %.*s\nPassword: %s\nOpen http://192.168.4.1/",
+                              static_cast<int>(password - ssid), ssid, password + 1);
+                lv_label_set_text(wifiStatusLabel, text);
+                return;
+            }
+        }
+        if (std::strcmp(status, "connected") == 0) {
+            lv_label_set_text(wifiStatusLabel, "Connected to Wi-Fi");
+        } else if (std::strcmp(status, "connecting") == 0) {
+            lv_label_set_text(wifiStatusLabel, "Connecting to Wi-Fi...");
+        } else if (std::strcmp(status, "disabled") == 0) {
+            lv_label_set_text(wifiStatusLabel, "Wi-Fi is disabled");
+        } else {
+            lv_label_set_text(wifiStatusLabel, "Wi-Fi status unavailable");
+        }
+    }
 }
 
 lv_obj_t *SettingsScreen::createRadioOption(lv_obj_t *parent, const char *labelText, bool checked, uint32_t optionId) {
     lv_obj_t *btn = lv_button_create(parent);
     lv_obj_set_width(btn, lv_pct(100));
-    lv_obj_set_height(btn, 36);
+    lv_obj_set_height(btn, 30);
     lv_obj_add_flag(btn, LV_OBJ_FLAG_CHECKABLE);
     lv_obj_set_style_bg_color(btn, lv_color_hex(0x2C2C2E), LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(btn, lv_color_hex(0x0A84FF), LV_STATE_CHECKED);
@@ -130,6 +212,7 @@ void SettingsScreen::handleRadioSelection(lv_obj_t *target) {
     // Update internal state depending on parent container
     if (parent == m_wifiGroup) {
         m_wifiMode = static_cast<WifiMode>(optionId);
+        publishWifiMode(m_wifiMode);
     } else if (parent == m_btGroup) {
         m_btMode = static_cast<BluetoothMode>(optionId);
     }

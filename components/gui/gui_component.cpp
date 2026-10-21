@@ -15,7 +15,13 @@
 #include "lvgl.h"
 #include "message_router.h"
 #include "settings_demo.h"
+#include <atomic>
+#include <cstring>
 #include <iostream>
+
+void settings_screen_update_wifi_status(const char *status);
+
+static std::atomic_bool gui_screen_ready{false};
 static const char *TAG = "gui";
 
 #define LCD_HOST SPI2_HOST
@@ -24,6 +30,9 @@ static const char *TAG = "gui";
 #define LCD_BIT_PER_PIXEL (16)
 #define LCD_DRAW_BUFF_HEIGHT (40)
 #define LCD_DRAW_BUFF_DOUBLE (true)
+#define GUI_TASK_CORE (1)
+#define GUI_TASK_STACK_SIZE (8 * 1024)
+#define GUI_TASK_PRIORITY (5)
 
 #define PIN_NUM_LCD_CS (GPIO_NUM_10)
 #define PIN_NUM_LCD_PCLK (GPIO_NUM_12)
@@ -51,34 +60,12 @@ static i2c_master_bus_handle_t i2c_handle = NULL;
 static esp_lcd_panel_io_handle_t tp_io_handle = NULL;
 static esp_lcd_touch_handle_t touch_handle = NULL;
 
-static void screen_touch_event_cb(lv_event_t *e) {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_PRESSED || code == LV_EVENT_PRESSING || code == LV_EVENT_RELEASED) {
-        ESP_LOGE(TAG, "Screen touch event callback triggered: %d", (int)code);
-        ESP_LOGE(TAG, "Screen is being pressed");
-        lv_indev_t *indev = (lv_indev_t *)lv_event_get_target(e);
-        if (indev) {
-            lv_point_t point;
-            lv_indev_get_point(indev, &point);
-
-            ESP_LOGE(TAG, "Screen Pressed at: X=%d, Y=%d", (int)point.x, (int)point.y);
-        }
-    }
-}
-
-static void setup_global_touch_listener(lv_indev_t *indev) {
-    ESP_LOGE(TAG, "Setting up global touch listener");
-    // Add event callback to catch drag/touch coordinates globally from the indev
-    lv_indev_add_event_cb(indev, screen_touch_event_cb, LV_EVENT_ALL, NULL);
-}
-
-static esp_err_t app_lvgl_init(int task_affinity) {
+static esp_err_t app_lvgl_init(BaseType_t task_affinity) {
     /* Initialize LVGL */
     lvgl_port_cfg_t lvgl_cfg = ESP_LVGL_PORT_INIT_CONFIG();
     lvgl_cfg.task_affinity = task_affinity;
     lvgl_cfg.task_max_sleep_ms = 500;
-    lvgl_port_init(&lvgl_cfg);
+    ESP_ERROR_CHECK(lvgl_port_init(&lvgl_cfg));
 
     /* Add LCD screen */
     ESP_LOGD(TAG, "Add LCD screen");
@@ -126,17 +113,19 @@ static esp_err_t app_lvgl_init(int task_affinity) {
     return ESP_OK;
 }
 
-static void app_main_display(void) {
+static void app_main_display(void *) {
     /* Task lock */
     lvgl_port_lock(0);
 
-    SettingsScreen settingsScreen;
+    static SettingsScreen settingsScreen;
     settingsScreen.init();
+    gui_screen_ready.store(true);
 
     /* Task unlock */
     lvgl_port_unlock();
 
     messageRouter::MessageRouter::getInstance()->publish(Message(ComponentId::COMPONENT_ID_WIFI, "GUI is ready"));
+    vTaskDelete(nullptr);
 }
 
 namespace gui {
@@ -238,12 +227,24 @@ void GuiComponent::init() {
     initDisplay();
     initTouch();
 
-    ESP_ERROR_CHECK(app_lvgl_init(0));
+    ESP_ERROR_CHECK(app_lvgl_init(GUI_TASK_CORE));
 
-    app_main_display();
+    const BaseType_t task_created = xTaskCreatePinnedToCore(app_main_display, "gui_init", GUI_TASK_STACK_SIZE, nullptr,
+                                                            GUI_TASK_PRIORITY, nullptr, GUI_TASK_CORE);
+    ESP_ERROR_CHECK(task_created == pdPASS ? ESP_OK : ESP_ERR_NO_MEM);
 }
 
 esp_err_t GuiComponent::messageHandler(const Message &msg) {
+    if (msg.id == ComponentId::COMPONENT_ID_WIFI && std::strncmp(msg.payload, "wifi_status:", 12) == 0) {
+        if (!gui_screen_ready.load()) {
+            return ESP_OK;
+        }
+        lvgl_port_lock(0);
+        settings_screen_update_wifi_status(msg.payload + 12);
+        lvgl_port_unlock();
+        return ESP_OK;
+    }
+
     // Handle incoming messages related to GUI component
     if (msg.id == ComponentId::COMPONENT_ID_LVGL_DISPLAY) {
         // Process the message payload

@@ -1,9 +1,19 @@
 #include "message_router.h"
+#include "esp_check.h"
 #include <esp_log.h>
+#include <cstring>
 
 static const char *TAG = "message-router";
 
 namespace messageRouter {
+
+static const char *messageLogPayload(const Message &message) {
+    static const char *const sensitivePrefix = "wifi_status:portal|";
+    if (std::strncmp(message.payload, sensitivePrefix, std::strlen(sensitivePrefix)) == 0) {
+        return "wifi_status:portal|[credentials redacted]";
+    }
+    return message.payload;
+}
 
 static void printSubscribersDb() {
     std::lock_guard<std::recursive_mutex> lock(MessageRouter::getInstance()->getDbMutex());
@@ -22,21 +32,15 @@ static void printSubscribersDb() {
     ESP_LOGI(TAG, "------------------------------------------------------------");
 }
 
-struct TaskParameters_t {
-    QueueHandle_t *xRouterQueue;
-    MessageRouter *router; // Pass router instance instead of raw pointers
-};
-
-static void routerTask(void *pvParameters) {
+void MessageRouter::routerTask(void *pvParameters) {
     Message receivedMsg;
-    TaskParameters_t *params = (TaskParameters_t *)pvParameters;
-    QueueHandle_t &xRouterQueue = *params->xRouterQueue;
-    MessageRouter *router = params->router;
+    auto *router = static_cast<MessageRouter *>(pvParameters);
+    QueueHandle_t &xRouterQueue = router->xRouterQueue;
 
     for (;;) {
         // Block indefinitely until a message arrives (no unnecessary wakeups)
         if (xQueueReceive(xRouterQueue, &receivedMsg, portMAX_DELAY) == pdPASS) {
-            ESP_LOGI(TAG, "Received message %s: id %s", receivedMsg.payload,
+            ESP_LOGI(TAG, "Received message %s: id %s", messageLogPayload(receivedMsg),
                      componentIdToString[receivedMsg.id].c_str());
             {
                 // Acquire lock and copy subscribers to avoid holding lock during callback
@@ -89,15 +93,16 @@ static void routerTask(void *pvParameters) {
 MessageRouter::MessageRouter(_cons) {
     // Create a FreeRTOS queue for message routing
     this->xRouterQueue = xQueueCreate(10, sizeof(Message));
-    // Create the router task
-    TaskParameters_t taskParams = {.xRouterQueue = &this->xRouterQueue, .router = this};
+    ESP_ERROR_CHECK(this->xRouterQueue ? ESP_OK : ESP_ERR_NO_MEM);
 
     ESP_LOGI(TAG, "Message router task created");
-    xTaskCreate(routerTask, "MessageRouterTask", 8192, &taskParams, 5, &this->xRouterTask);
+    const BaseType_t taskCreated = xTaskCreate(routerTask, "MessageRouterTask", 8192, this, 5, &this->xRouterTask);
+    ESP_ERROR_CHECK(taskCreated == pdPASS ? ESP_OK : ESP_ERR_NO_MEM);
 }
 
 esp_err_t MessageRouter::publish(const Message &message) {
-    ESP_LOGI(TAG, "Publishing message %s: id %s", message.payload, componentIdToString[message.id].c_str());
+    ESP_LOGI(TAG, "Publishing message %s: id %s", messageLogPayload(message),
+             componentIdToString[message.id].c_str());
     if (xQueueSend(xRouterQueue, &message, portMAX_DELAY) != pdPASS) {
         ESP_LOGE(TAG, "Failed to send message to router queue");
         return ESP_FAIL;

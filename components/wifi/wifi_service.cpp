@@ -1,4 +1,5 @@
 #include "wifi_service.h"
+#include "esp_check.h"
 #include "esp_log.h"
 #include <cstdio>
 
@@ -9,16 +10,18 @@ namespace services {
 void WifiService::start() {
     // Start the WiFi service
     ESP_LOGI(TAG, "WiFi service starting");
+    this->wifiComponent = std::make_shared<WifiComponent>();
+    ESP_ERROR_CHECK(this->wifiComponent->init());
     this->setServiceState(SERVICE_RUNNING);
-    this->wifiComponent = std::make_unique<WifiComponent>();
     ESP_LOGI(TAG, "WiFi service started successfully");
-    // Add code to initialize WiFi hardware and connect to network
 }
 
 void WifiService::stop() {
-    // Stop the WiFi service
+    if (this->wifiComponent) {
+        this->wifiComponent->stop();
+        this->wifiComponent.reset();
+    }
     this->setServiceState(SERVICE_STOPPED);
-    // Add code to disconnect from network and cleanup WiFi resources
 }
 
 } // namespace services

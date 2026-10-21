@@ -18,7 +18,7 @@ class WifiService : public ServiceInterface {
     void stop() override;
 
   private:
-    std::unique_ptr<WifiComponent> wifiComponent;
+    std::shared_ptr<WifiComponent> wifiComponent;
 };
 
 } // namespace services

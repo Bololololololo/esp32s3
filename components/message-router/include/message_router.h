@@ -30,6 +30,7 @@ class MessageRouter {
 
     TaskHandle_t xRouterTask;
     QueueHandle_t xRouterQueue;
+    static void routerTask(void *pvParameters);
 
   public:
     MessageRouter(_cons);
